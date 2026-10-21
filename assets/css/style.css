@@ -1478,6 +1478,15 @@ textarea.form-control {
   margin-top: 0.4rem;
 }
 
+.action-hint {
+  flex: 0 0 100%;
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--ink-muted);
+  max-width: 52ch;
+}
+
 .action-buttons {
   display: flex;
   gap: 0.5rem;
@@ -3081,6 +3090,15 @@ textarea.form-control {
   }
 }
 
+/* --------------------------------------------------------------------------
+   18. PRINT REPORT — window.print() outputs only the calculation report.
+   The host (built by calculator.js) stays hidden on screen and becomes the
+   sole printed content, styled ink-on-paper regardless of the active theme.
+   -------------------------------------------------------------------------- */
+.print-report {
+  display: none;
+}
+
 @media print {
   /* Printing should always be ink-on-paper, even if the visitor chose dark. */
   :root,
@@ -3114,35 +3132,289 @@ textarea.form-control {
     --chart-strong-label: #A83328;
   }
 
+  @page {
+    margin: 14mm 12mm 16mm;
+  }
+
   body {
     background: #FFFFFF !important;
-    color: #000000 !important;
+    color: #111111 !important;
     padding-bottom: 0 !important;
+    min-height: 0 !important;
+    display: block !important;
     transition: none !important;
   }
 
+  /* On the calculator page everything outside the generated report
+     disappears from the printout. Other pages (guides, legal, …) have no
+     report and simply print their article content. */
+  body:has(.print-report) > *:not(.print-report) {
+    display: none !important;
+  }
+
+  /* Site chrome is never worth paper, with or without a report. */
   .site-header,
   .site-footer,
   .mobile-sticky-kpi-bar,
   .calc-mobile-tabs-wrap,
   .ad-slot-container,
+  .ad-rail,
   .consent-banner,
-  .action-buttons,
-  .view-toggle-group,
-  .btn {
+  .tooltip-popover,
+  .header-actions,
+  .btn,
+  .action-hint {
     display: none !important;
   }
 
-  .calc-grid {
+  .print-report {
     display: block !important;
+    max-width: none;
+    color: #111111;
+    background: #FFFFFF;
+    font-size: 10pt;
+    line-height: 1.5;
   }
 
-  .calc-card,
-  .results-card {
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin-bottom: 1rem !important;
+  .pr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    border-bottom: 2pt solid #0C5B45;
+    padding-bottom: 8pt;
+    margin-bottom: 12pt;
+  }
+
+  .pr-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 17pt;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #083527;
+  }
+
+  .pr-meta {
+    margin: 2pt 0 0;
+    font-size: 8pt;
+    color: #555555;
+  }
+
+  .pr-section-title {
+    margin: 14pt 0 6pt;
+    padding-bottom: 2pt;
+    border-bottom: 0.75pt solid #B9CFC4;
+    font-family: var(--font-display);
+    font-size: 12pt;
+    font-weight: 700;
+    color: #083527;
+    break-after: avoid;
+  }
+
+  .pr-label {
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #4B5A52;
+    margin-bottom: 2pt;
+  }
+
+  .pr-callout {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10pt 18pt;
+    background: #EEF6F1;
+    border: 0.75pt solid #BFDCCE;
+    border-radius: 6pt;
+    padding: 10pt 12pt;
+    break-inside: avoid;
+  }
+
+  .pr-callout-main {
+    min-width: 190pt;
+  }
+
+  .pr-savings {
+    font-size: 21pt;
+    font-weight: 700;
+    line-height: 1.05;
+    color: #0C5B45;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pr-sub {
+    margin-top: 3pt;
+    font-size: 8.5pt;
+    color: #333333;
+    max-width: 60ch;
+  }
+
+  .pr-kpi-row {
+    display: flex;
+    gap: 8pt;
+    min-width: 230pt;
+  }
+
+  .pr-kpi {
+    flex: 1;
+    border: 0.75pt solid #BFDCCE;
+    background: #FFFFFF;
+    border-radius: 5pt;
+    padding: 5pt 7pt;
+    break-inside: avoid;
+  }
+
+  .pr-kpi strong {
+    display: block;
+    font-size: 11pt;
+    color: #111111;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pr-assumptions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5pt;
+  }
+
+  .pr-cell {
+    border: 0.75pt solid #C9D6CE;
+    border-radius: 4pt;
+    padding: 4pt 7pt;
+    break-inside: avoid;
+  }
+
+  .pr-cell strong {
+    display: block;
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: #111111;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pr-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+    line-height: 1.35;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pr-table th,
+  .pr-table td {
+    padding: 3.5pt 6pt;
+    border-bottom: 0.5pt solid #D9E5DE;
+    text-align: right;
+    vertical-align: top;
+  }
+
+  .pr-table th {
+    background: #EEF6F1;
+    color: #083527;
+    border-bottom: 1pt solid #0C5B45;
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .pr-table th:first-child,
+  .pr-table td:first-child {
+    text-align: left;
+  }
+
+  .pr-table tbody tr {
+    break-inside: avoid;
+  }
+
+  .pr-table .is-negative,
+  .pr-table .col-warn {
+    color: #A83328;
+  }
+
+  .pr-table .col-good {
+    color: #0C5B45;
+  }
+
+  .pr-table tfoot td {
+    font-weight: 700;
+    border-top: 1pt solid #0C5B45;
+    border-bottom: none;
+    background: #F4F9F6;
+  }
+
+  .pr-badge {
+    display: inline-block;
+    background: #0C5B45;
+    color: #FFFFFF;
+    font-size: 6.5pt;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 1pt 5pt;
+    border-radius: 999pt;
+    vertical-align: middle;
+  }
+
+  .pr-method {
+    margin: 0 0 4pt;
+    font-size: 9pt;
+    color: #222222;
+    max-width: 95ch;
+  }
+
+  .pr-chart {
+    break-inside: avoid;
+    margin-top: 4pt;
+  }
+
+  .pr-chart svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .pr-caption {
+    margin-top: 3pt;
+    font-size: 8pt;
+    color: #555555;
+  }
+
+  .pr-next-steps {
+    border-left: 2.5pt solid #0C5B45;
+    padding: 4pt 10pt;
+    margin: 4pt 0 0;
+    background: #F4F9F6;
+    break-inside: avoid;
+  }
+
+  .pr-next-steps ul {
+    margin: 0;
+    padding-left: 14pt;
+    font-size: 9pt;
+    color: #222222;
+  }
+
+  .pr-next-steps li {
+    margin-bottom: 2pt;
+  }
+
+  .pr-footer {
+    margin-top: 14pt;
+    padding-top: 7pt;
+    border-top: 0.75pt solid #C9D6CE;
+    font-size: 7.5pt;
+    line-height: 1.5;
+    color: #555555;
+    break-inside: avoid;
+  }
+
+  .pr-footer p {
+    margin: 0 0 4pt;
+    max-width: 100ch;
   }
 
   .fade-in-section {

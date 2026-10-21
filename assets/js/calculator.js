@@ -59,6 +59,11 @@
     rbdStatus: 'after'
   };
 
+  // Last computed inputs/results, snapshot for the print report.
+  let lastParams = null;
+  let lastResults = null;
+  let printReportHost = null;
+
   // IRS Single Life Expectancy Divisors (IRS Pub 590-B Table I)
   function getLifeExpectancyDivisor(age) {
     if (age <= 30) return 55.3;
@@ -325,7 +330,9 @@
   }
 
   // Render Modern Responsive SVG Chart
-  function renderSvgChart(results) {
+  // `idSuffix` keeps duplicate gradient IDs apart when a second chart is
+  // embedded in the print report.
+  function renderSvgChart(results, idSuffix) {
     const s1 = results.scenario1.schedule;
     const s3 = results.scenario3.schedule;
     const maxVal = Math.max(
@@ -333,6 +340,8 @@
       ...s3.map(d => d.withdrawal),
       10000
     );
+    const gradBomb = 'barGradRed' + (idSuffix || '');
+    const gradOpt = 'barGradGreen' + (idSuffix || '');
 
     const width = 640;
     const height = 240;
@@ -350,11 +359,11 @@
 
     let gridSvg = `
       <defs>
-        <linearGradient id="barGradRed" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="${gradBomb}" x1="0" y1="0" x2="0" y2="1">
           <stop class="stop-a" offset="0%" stop-color="#C9564A"/>
           <stop class="stop-b" offset="100%" stop-color="#A83328"/>
         </linearGradient>
-        <linearGradient id="barGradGreen" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="${gradOpt}" x1="0" y1="0" x2="0" y2="1">
           <stop class="stop-a" offset="0%" stop-color="#1B7A5C"/>
           <stop class="stop-b" offset="100%" stop-color="#0A4A38"/>
         </linearGradient>
@@ -383,12 +392,12 @@
       bars += `
         <g class="chart-year-group" data-year="${i + 1}" data-s1="${s1[i].withdrawal}" data-s3="${s3[i].withdrawal}" data-s1tax="${s1[i].taxes}" data-s3tax="${s3[i].taxes}">
           <!-- S1 Bar (Tax Bomb Crimson) -->
-          <rect x="${xGroup}" y="${y1}" width="${barWidth}" height="${h1}" rx="4" fill="url(#barGradRed)" class="chart-bar bar-bomb">
+          <rect x="${xGroup}" y="${y1}" width="${barWidth}" height="${h1}" rx="4" fill="url(#${gradBomb})" class="chart-bar bar-bomb">
             <title>Year ${i + 1} Lump-Sum Bomb: ${fmt(s1[i].withdrawal)} (Tax: ${fmt(s1[i].taxes)})</title>
           </rect>
 
           <!-- S3 Bar (Optimized Emerald) -->
-          <rect x="${xGroup + barWidth + 3}" y="${y3}" width="${barWidth}" height="${h3}" rx="4" fill="url(#barGradGreen)" class="chart-bar bar-opt">
+          <rect x="${xGroup + barWidth + 3}" y="${y3}" width="${barWidth}" height="${h3}" rx="4" fill="url(#${gradOpt})" class="chart-bar bar-opt">
             <title>Year ${i + 1} Smoothed Payout: ${fmt(s3[i].withdrawal)} (Tax: ${fmt(s3[i].taxes)})</title>
           </rect>
 
@@ -509,6 +518,191 @@
     container.innerHTML = html;
   }
 
+  // -----------------------------------------------------------------
+  // PRINT REPORT — generated from the latest calculation and printed
+  // instead of the marketing page (only `.print-report` shows in print).
+  // -----------------------------------------------------------------
+  function ensurePrintHost() {
+    if (printReportHost && document.body.contains(printReportHost)) {
+      return printReportHost;
+    }
+    printReportHost = document.createElement('section');
+    printReportHost.id = 'print-report';
+    printReportHost.className = 'print-report';
+    printReportHost.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(printReportHost);
+    return printReportHost;
+  }
+
+  function buildPrintReport() {
+    if (!lastParams || !lastResults) return;
+
+    const p = lastParams;
+    const r = lastResults;
+    const host = ensurePrintHost();
+
+    const statusLabel = {
+      single: 'Single',
+      married: 'Married filing jointly',
+      hoh: 'Head of household'
+    }[p.filingStatus] || 'Single';
+    const stateRate = (STATE_TAX_RATES[p.stateRateKey] || 0) * 100;
+    const generated = new Date().toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    const s1 = r.scenario1;
+    const s2 = r.scenario2;
+    const s3 = r.scenario3;
+    const y10S1 = s1.schedule[9].taxes;
+    const y10S3 = s3.schedule[9].taxes;
+    const y10Drop = y10S1 > 0 ? Math.max(0, Math.round((1 - y10S3 / y10S1) * 100)) : 0;
+    const recommended = s2.totalTax <= s3.totalTax ? 'Equal annual plan' : 'Bracket smoothing';
+    const s3Rate = s3.totalWithdrawn > 0 ? ((s3.totalTax / s3.totalWithdrawn) * 100).toFixed(1) : '0.0';
+    const s1Rate = s1.totalWithdrawn > 0 ? ((s1.totalTax / s1.totalWithdrawn) * 100).toFixed(1) : '0.0';
+
+    const taxableTotal = s3.schedule.reduce((sum, row) => sum + row.taxableIncome, 0);
+
+    const scheduleRows = s3.schedule.map((row, i) => `
+          <tr>
+            <td>Year ${i + 1} (age ${row.age})</td>
+            <td>${fmt(row.beginningBalance)}</td>
+            <td class="col-good">${fmt(row.withdrawal)}</td>
+            <td>${fmt(row.taxableIncome)}</td>
+            <td>${fmt(row.taxes)}</td>
+            <td>${row.withdrawal > 0 ? ((row.taxes / row.withdrawal) * 100).toFixed(1) + '%' : '—'}</td>
+            <td>${fmt(row.endingBalance)}</td>
+          </tr>`).join('');
+
+    host.innerHTML = `
+      <header class="pr-header">
+        <div>
+          <h1 class="pr-title">Inherited IRA 10-Year Distribution Analysis</h1>
+          <p class="pr-meta">Prepared with IRACALCULATOR (iracalculator.online) · Generated ${generated} · Figures are estimates, not tax advice</p>
+        </div>
+      </header>
+
+      <section class="pr-callout">
+        <div class="pr-callout-main">
+          <div class="pr-label">Estimated lifetime tax savings — smoothing vs. a single Year 10 liquidation</div>
+          <div class="pr-savings">${fmt(r.taxSavings)}</div>
+          <p class="pr-sub">Versus ${fmt(s1.totalTax)} of total tax if the balance is left to grow and liquidated entirely in Year 10.</p>
+        </div>
+        <div class="pr-kpi-row">
+          <div class="pr-kpi">
+            <span class="pr-label">Effective rate</span>
+            <strong>${s3Rate}% vs ${s1Rate}%</strong>
+            Smoothing vs. waiting
+          </div>
+          <div class="pr-kpi">
+            <span class="pr-label">Year 10 tax</span>
+            <strong>${fmt(y10S3)} vs ${fmt(y10S1)}</strong>
+            ${y10Drop > 0 ? y10Drop + '% lower' : 'no change'}
+          </div>
+          <div class="pr-kpi">
+            <span class="pr-label">Lowest-tax plan</span>
+            <strong>${recommended}</strong>
+            Lowest 10-year total tax
+          </div>
+        </div>
+      </section>
+
+      <h2 class="pr-section-title">Assumptions</h2>
+      <div class="pr-assumptions">
+        <div class="pr-cell"><span class="pr-label">Starting balance</span><strong>${fmt(p.balance)}</strong></div>
+        <div class="pr-cell"><span class="pr-label">Expected annual return</span><strong>${p.annualGrowthRate.toFixed(1)}%</strong></div>
+        <div class="pr-cell"><span class="pr-label">Base taxable income</span><strong>${fmt(p.baseIncome)}</strong></div>
+        <div class="pr-cell"><span class="pr-label">Filing status</span><strong>${statusLabel}</strong></div>
+        <div class="pr-cell"><span class="pr-label">State tax tier</span><strong>${stateRate.toFixed(1)}%</strong></div>
+        <div class="pr-cell"><span class="pr-label">RMD window</span><strong>${p.diedAfterRBD ? 'Required, years 1–9' : 'Not required'}</strong></div>
+        <div class="pr-cell"><span class="pr-label">Beneficiary age in Year 1</span><strong>${p.beneficiaryAge}</strong></div>
+        <div class="pr-cell"><span class="pr-label">Income growth</span><strong>${p.incomeGrowthRate.toFixed(1)}% per year</strong></div>
+        <div class="pr-cell"><span class="pr-label">Owner died</span><strong>${p.diedAfterRBD ? 'Age 73 or later' : 'Before age 73'}</strong></div>
+      </div>
+
+      <h2 class="pr-section-title">How this is calculated</h2>
+      <p class="pr-method">Every year the model recalculates federal tax on <strong>base income + that year's withdrawal</strong> using 2026 ordinary-income brackets for ${statusLabel}, then adds the flat ${stateRate.toFixed(1)}% state rate. The savings figure compares the full 10-year tax of two paths with identical investments and identical dollars distributed by Year 10 — only the timing differs.</p>
+
+      <h2 class="pr-section-title">Strategy comparison — 10-year totals</h2>
+      <table class="pr-table">
+        <thead>
+          <tr>
+            <th scope="col">Strategy</th>
+            <th scope="col">Total 10-yr tax</th>
+            <th scope="col">Year 10 tax</th>
+            <th scope="col">Savings vs. Year 10</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Wait for Year 10 (minimums, then full liquidation)</td>
+            <td class="col-warn">${fmt(s1.totalTax)}</td>
+            <td class="col-warn">${fmt(y10S1)}</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Equal annual plan${recommended === 'Equal annual plan' ? ' <span class="pr-badge">Lowest tax</span>' : ''}</td>
+            <td>${fmt(s2.totalTax)}</td>
+            <td>${fmt(s2.schedule[9].taxes)}</td>
+            <td class="col-good">${fmt(Math.max(0, s1.totalTax - s2.totalTax))}</td>
+          </tr>
+          <tr>
+            <td>Bracket smoothing${recommended === 'Bracket smoothing' ? ' <span class="pr-badge">Lowest tax</span>' : ''}</td>
+            <td>${fmt(s3.totalTax)}</td>
+            <td>${fmt(y10S3)}</td>
+            <td class="col-good">${fmt(Math.max(0, s1.totalTax - s3.totalTax))}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 class="pr-section-title">Bracket-smoothing schedule, year by year</h2>
+      <table class="pr-table">
+        <thead>
+          <tr>
+            <th scope="col">Year</th>
+            <th scope="col">Starting balance</th>
+            <th scope="col">Withdrawal</th>
+            <th scope="col">Taxable income</th>
+            <th scope="col">Estimated tax</th>
+            <th scope="col">Effective rate</th>
+            <th scope="col">Ending balance</th>
+          </tr>
+        </thead>
+        <tbody>${scheduleRows}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>Totals</td>
+            <td></td>
+            <td>${fmt(s3.totalWithdrawn)}</td>
+            <td>${fmt(taxableTotal)}</td>
+            <td>${fmt(s3.totalTax)}</td>
+            <td>${s3Rate}%</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <h2 class="pr-section-title">Annual withdrawals — the two paths visually</h2>
+      <div class="pr-chart">${renderSvgChart(r, 'Print')}</div>
+      <p class="pr-caption">Red bars: waiting until Year 10 and draining the account at once. Green bars: the bracket-smoothing plan detailed above. Only the green path is automatic — plan each year's withdrawal deliberately.</p>
+
+      <div class="pr-next-steps">
+        <div class="pr-label">Before you act</div>
+        <ul>
+          <li>Bring the schedule and totals to your CPA or CFP before executing distributions.</li>
+          <li>Re-run the calculator with different base income and state tiers — the cheapest plan can change with either.</li>
+          <li>Recalculate each year: balances, income, and bracket thresholds all move.</li>
+        </ul>
+      </div>
+
+      <footer class="pr-footer">
+        <p><strong>Method notes.</strong> Federal tax uses 2026 ordinary-income brackets (${statusLabel}). Where RMDs apply, annual minimums follow the IRS single-life expectancy table (Pub 590-B), approximated by age band. The inherited balance compounds at ${p.annualGrowthRate.toFixed(1)}% and baseline income grows ${p.incomeGrowthRate.toFixed(1)}% per year. All distributions are treated as fully taxable ordinary income; deductions, credits, net investment income tax, and penalty rules are outside the model.</p>
+        <p>For educational purposes only — not legal, tax, or investment advice. Always consult a licensed CPA or CFP before executing retirement distributions. © ${new Date().getFullYear()} IRACALCULATOR (iracalculator.online).</p>
+      </footer>
+    `;
+  }
+
   // Update DOM Results
   function updateUI() {
     const balance = parseFloat(document.getElementById('input-balance').value) || 250000;
@@ -530,6 +724,19 @@
       diedAfterRBD,
       beneficiaryAge
     });
+
+    // Snapshot for the print report (kept in sync on every recompute).
+    lastParams = {
+      balance,
+      annualGrowthRate,
+      baseIncome,
+      incomeGrowthRate,
+      filingStatus,
+      stateRateKey,
+      diedAfterRBD,
+      beneficiaryAge
+    };
+    lastResults = results;
 
     // Strategy Savings Banner
     animateSavingsNumber(results.taxSavings);
@@ -653,6 +860,9 @@
 
     // Render Mobile Cards View
     renderMobileCards(results);
+
+    // Keep the print report in sync with the latest numbers.
+    buildPrintReport();
   }
 
   // Interactive SVG Chart Tooltips
@@ -842,13 +1052,17 @@
       });
     }
 
-    // Print Report
+    // Print Report — refreshes the generated report, then prints only it
     const printBtn = document.getElementById('btn-print-report');
     if (printBtn) {
       printBtn.addEventListener('click', () => {
+        buildPrintReport();
         window.print();
       });
     }
+
+    // Ctrl+P and the browser menu also print the report, never the page.
+    window.addEventListener('beforeprint', buildPrintReport);
 
     // -------------------------------------------------------------
     // Mobile & Tablet Segmented Tab Switcher Logic
