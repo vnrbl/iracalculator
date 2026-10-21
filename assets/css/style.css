@@ -12,39 +12,61 @@
    1. DESIGN TOKENS
    -------------------------------------------------------------------------- */
 :root {
-  /* Surfaces — warm neutrals (avoid the cold slate/blue "SaaS" default) */
-  --paper: #FAF8F4;
+  /* Theme state — `data-theme` is resolved by the inline boot script in <head>
+     (light / dark) so there is no flash before first paint. `data-theme-mode`
+     keeps the visitor's choice (light / dark / system) for the toggle UI. */
+  color-scheme: light;
+
+  /* Surfaces — warm editorial neutrals (deliberately not cold slate) */
+  --paper: #F8F6F0;
   --surface: #FFFFFF;
-  --surface-sunken: #F1EDE6;
-  --surface-ink: #14201B;
+  --surface-sunken: #F1EEE5;
+  --surface-ink: #10201A;
 
   /* Ink */
-  --ink: #1A1F1C;
-  --ink-2: #3C443F;
-  --ink-muted: #5C645F;
-  --ink-faint: #8C938E;
+  --ink: #16201B;
+  --ink-2: #3A443E;
+  --ink-muted: #5B655F;
+  --ink-faint: #6F7973;
   --ink-inverse: #FFFFFF;
 
   /* Lines */
-  --line: #E4DFD4;
-  --line-strong: #D0C9BA;
+  --line: #E5E0D3;
+  --line-strong: #D2CBB8;
 
-  /* Accent — deep forest green (the "money" colour) */
-  --accent: #0E5B45;
-  --accent-strong: #0A4535;
-  --accent-soft: #E8F1EC;
-  --accent-line: #B9D7C9;
+  /* Accent — deep forest green: trust, growth, money (the "keep more" colour) */
+  --accent: #0C5B45;
+  --accent-strong: #07402F;
+  --accent-soft: #E9F3ED;
+  --accent-line: #BAD9C9;
   /* Foreground colour that sits on top of --accent (WCAG AA in both modes) */
   --on-accent: #FFFFFF;
+  /* Soft accent wash used for depth behind hero / headline results */
+  --accent-wash: rgba(12, 91, 69, 0.07);
+  --accent-ring: rgba(12, 91, 69, 0.18);
 
   /* Semantic */
-  --success: #14804A;
-  --success-soft: #E6F3EC;
+  --success: #147A48;
+  --success-soft: #E7F4EC;
   --danger: #B23A2E;
-  --danger-soft: #FAEBE8;
-  --danger-line: #ECBFB8;
+  --danger-soft: #FBEDEA;
+  --danger-line: #EDC2BA;
   --warning: #8A5A00;
-  --warning-soft: #FBF1DC;
+  --warning-soft: #FBF2DD;
+
+  /* Chart series (kept as tokens so the SVG adapts to the active theme) */
+  --chart-bomb-from: #C9564A;
+  --chart-bomb-to: #A83328;
+  --chart-opt-from: #1B7A5C;
+  --chart-opt-to: #0A4A38;
+  --chart-grid: #DDD8CE;
+  --chart-axis: #CFC9BD;
+  --chart-label: #5B655F;
+  --chart-label-muted: #6F7973;
+  --chart-strong-label: #A83328;
+
+  /* Select chevron — recoloured per theme instead of a hard-coded fill */
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235B655F' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 
   /* Aliases kept for legacy inline styles on guide pages */
   --primary-navy: var(--ink);
@@ -52,7 +74,7 @@
   --bg-card: var(--surface);
   --bg-subtle: var(--surface-sunken);
   --bg-input: var(--surface);
-  --bg-input-focus: #FBFFFD;
+  --bg-input-focus: #FCFEFC;
   --text-main: var(--ink);
   --text-muted: var(--ink-muted);
   --text-light: var(--ink-faint);
@@ -116,40 +138,56 @@
   --container: 1180px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #141816;
-    --surface: #1B211E;
-    --surface-sunken: #232A26;
-    --surface-ink: #0E1211;
+:root[data-theme='dark'] {
+  color-scheme: dark;
 
-    --ink: #F2F1EC;
-    --ink-2: #C9CEC9;
-    --ink-muted: #9BA39D;
-    --ink-faint: #737B76;
+  /* Deep forest night — the same humid-green family, re-lit for low light */
+  --paper: #0F1512;
+  --surface: #161D19;
+  --surface-sunken: #1D2521;
+  --surface-ink: #070C0A;
 
-    --line: #2C342F;
-    --line-strong: #3B443E;
+  --ink: #EDF1EC;
+  --ink-2: #C6CEC7;
+  --ink-muted: #97A29A;
+  --ink-faint: #7E8A81;
+  --ink-inverse: #0B110E;
 
-    --accent: #57C79C;
-    --accent-strong: #78D8B2;
-    --accent-soft: #14302A;
-    --accent-line: #2A5045;
-    /* Light accents need dark text, not white */
-    --on-accent: #0E1211;
+  --line: #263029;
+  --line-strong: #36423A;
 
-    --success: #57C79C;
-    --success-soft: #14302A;
-    --danger: #E88A7F;
-    --danger-soft: #33201D;
-    --danger-line: #5A3833;
-    --warning: #E3B357;
-    --warning-soft: #33290F;
+  --accent: #5FD3A4;
+  --accent-strong: #8CE7C2;
+  --accent-soft: #10302A;
+  --accent-line: #235243;
+  /* Light accents need dark text, not white */
+  --on-accent: #07130F;
+  --accent-wash: rgba(95, 211, 164, 0.08);
+  --accent-ring: rgba(95, 211, 164, 0.26);
 
-    --bg-input-focus: #1B211E;
-    --shadow-md: 0 6px 16px -8px rgba(0, 0, 0, 0.6);
-    --shadow-lg: 0 20px 34px -20px rgba(0, 0, 0, 0.7);
-  }
+  --success: #5FD3A4;
+  --success-soft: #10302A;
+  --danger: #F1917F;
+  --danger-soft: #35201C;
+  --danger-line: #5E3A34;
+  --warning: #E9BC63;
+  --warning-soft: #33280F;
+
+  --chart-bomb-from: #F09B8C;
+  --chart-bomb-to: #D96A59;
+  --chart-opt-from: #7FE3BC;
+  --chart-opt-to: #45BC92;
+  --chart-grid: #2C3830;
+  --chart-axis: #3B4A41;
+  --chart-label: #97A29A;
+  --chart-label-muted: #7E8A81;
+  --chart-strong-label: #F1917F;
+
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2397A29A' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+
+  --bg-input-focus: #1A231E;
+  --shadow-md: 0 6px 16px -8px rgba(0, 0, 0, 0.6), 0 2px 6px -3px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 20px 34px -20px rgba(0, 0, 0, 0.75);
 }
 
 /* --------------------------------------------------------------------------
@@ -186,7 +224,21 @@ body {
   line-height: 1.6;
   color: var(--ink);
   background-color: var(--paper);
+  /* A faint accent bloom at the top gives the warm paper a lit-from-within
+     quality without washing out text. Uses a token so it flips with the theme. */
+  background-image: radial-gradient(
+    1100px 460px at 14% -12%,
+    var(--accent-wash),
+    transparent 70%
+  );
+  background-repeat: no-repeat;
   overflow-x: clip;
+  transition: background-color var(--ease-smooth), color var(--ease-smooth);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--ink);
 }
 
 body.menu-open {
@@ -375,6 +427,153 @@ td,
 
 .nav-cta:hover {
   background: var(--accent-strong);
+}
+
+/* Theme switcher -------------------------------------------------------- */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: var(--space-1);
+}
+
+.theme-menu {
+  position: relative;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: color var(--ease-fast), background var(--ease-fast),
+    border-color var(--ease-fast);
+}
+
+.theme-toggle:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+}
+
+.theme-toggle[aria-expanded='true'] {
+  color: var(--ink);
+  background: var(--surface-sunken);
+  border-color: var(--line);
+}
+
+.theme-toggle svg {
+  display: none;
+}
+
+html[data-theme-mode='light'] .theme-toggle .icon-sun,
+html[data-theme-mode='dark'] .theme-toggle .icon-moon,
+html[data-theme-mode='system'] .theme-toggle .icon-system {
+  display: block;
+}
+
+/* No JS: fall back to the system icon so the control still renders */
+html:not([data-theme-mode]) .theme-toggle .icon-system {
+  display: block;
+}
+
+.theme-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 120;
+  min-width: 200px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  transform-origin: top right;
+  animation: theme-pop-in 140ms var(--ease-fast);
+}
+
+.theme-popover[hidden] {
+  display: none;
+}
+
+@keyframes theme-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.theme-popover-label {
+  display: block;
+  padding: 0.35rem 0.6rem 0.3rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--ease-fast), color var(--ease-fast);
+}
+
+.theme-option:hover {
+  background: var(--surface-sunken);
+  color: var(--ink);
+}
+
+.theme-option[aria-checked='true'] {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.theme-option .theme-option-icon {
+  display: inline-flex;
+  color: currentColor;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.theme-option .theme-check {
+  margin-left: auto;
+  opacity: 0;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.theme-option[aria-checked='true'] .theme-check {
+  opacity: 1;
+}
+
+@media (max-width: 480px) {
+  .header-actions {
+    gap: var(--space-1);
+    margin-left: 0;
+  }
 }
 
 .mobile-menu-btn {
@@ -1022,7 +1221,7 @@ td,
 
 select.form-control {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235C645F' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-image: var(--select-arrow);
   background-repeat: no-repeat;
   background-position: right 0.85rem center;
   padding-right: 2.2rem;
@@ -1230,7 +1429,11 @@ textarea.form-control {
 }
 
 .savings-callout {
-  background: var(--accent-soft);
+  background: linear-gradient(
+    135deg,
+    var(--accent-soft) 0%,
+    color-mix(in srgb, var(--accent) 10%, var(--surface)) 100%
+  );
   border: 1px solid var(--accent-line);
   border-radius: var(--radius-md);
   padding: var(--space-5) var(--space-6);
@@ -1265,7 +1468,14 @@ textarea.form-control {
   font-size: 0.8125rem;
   color: var(--ink-2);
   margin-top: 0.35rem;
-  max-width: 44ch;
+  max-width: 48ch;
+}
+
+.savings-basis {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  margin-top: 0.4rem;
 }
 
 .action-buttons {
@@ -1319,6 +1529,231 @@ textarea.form-control {
   font-size: 0.6875rem;
   color: var(--ink-faint);
   margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+/* Results intro -------------------------------------------------------- */
+.results-intro {
+  margin-bottom: var(--space-5);
+}
+
+.results-eyebrow {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+}
+
+.results-title {
+  font-size: var(--step-2);
+  margin-bottom: 0.35rem;
+}
+
+.results-lede {
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+  max-width: 60ch;
+  line-height: 1.55;
+}
+
+.results-block-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.25rem var(--space-3);
+  margin: var(--space-6) 0 var(--space-3);
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.results-block-head h3 {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.results-block-hint {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+
+/* Assumption summary --------------------------------------------------- */
+.assumption-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.assumption-cell {
+  background: var(--surface);
+  padding: 0.65rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.assumption-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-faint);
+}
+
+.assumption-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The math, spelled out ------------------------------------------------ */
+.math-panel {
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.math-equation {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.math-term {
+  flex: 1 1 130px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.math-term.is-loss .math-value {
+  color: var(--danger);
+}
+
+.math-term.is-result {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+
+.math-term.is-result .math-value {
+  color: var(--accent-strong);
+}
+
+.math-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+}
+
+.math-value {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.math-op {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  padding: 0 0.1rem;
+}
+
+.math-notes {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.math-notes li {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.math-notes li::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  margin-top: 0.45rem;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.math-notes em {
+  font-style: normal;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+/* Plain-language reading of the result --------------------------------- */
+.insight-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-top: var(--space-3);
+  padding: 0.7rem 0.85rem;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.insight-line svg {
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.insight-line strong {
+  color: var(--ink);
+}
+
+@media (max-width: 600px) {
+  .math-term {
+    flex: 1 1 100%;
+  }
+
+  /* Keep the − and = visible when the equation stacks vertically. */
+  .math-op {
+    width: 100%;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    margin: 0.1rem 0;
+  }
 }
 
 /* Strategy comparison cards */
@@ -1349,6 +1784,10 @@ textarea.form-control {
 .scenario-card.recommended {
   border-color: var(--accent);
   background: var(--accent-soft);
+}
+
+.badge-recommended[hidden] {
+  display: none;
 }
 
 .badge-recommended {
@@ -1416,6 +1855,14 @@ textarea.form-control {
 
 .scenario-card.recommended .metric-row.total-tax .value {
   color: var(--accent-strong);
+}
+
+.comparison-note {
+  margin-top: calc(var(--space-3) * -1);
+  margin-bottom: var(--space-2);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--ink-muted);
 }
 
 /* Chart */
@@ -1561,8 +2008,83 @@ textarea.form-control {
   transition: opacity var(--ease-fast);
 }
 
-.chart-year-group:hover .chart-bar {
-  opacity: 0.82;
+/* Chart fills are driven by theme tokens (inline SVG, so CSS wins over the
+   presentation attributes emitted by calculator.js) */
+.bar-bomb {
+  fill: url(#barGradRed);
+}
+
+.bar-opt {
+  fill: url(#barGradGreen);
+}
+
+#barGradRed .stop-a {
+  stop-color: var(--chart-bomb-from);
+}
+
+#barGradRed .stop-b {
+  stop-color: var(--chart-bomb-to);
+}
+
+#barGradGreen .stop-a {
+  stop-color: var(--chart-opt-from);
+}
+
+#barGradGreen .stop-b {
+  stop-color: var(--chart-opt-to);
+}
+
+.chart-gridline {
+  stroke: var(--chart-grid);
+}
+
+.chart-axis-line {
+  stroke: var(--chart-axis);
+}
+
+.chart-axis-label {
+  fill: var(--chart-label);
+}
+
+.chart-bar-label {
+  fill: var(--chart-strong-label);
+}
+
+.chart-value-label {
+  fill: var(--chart-label-muted);
+}
+
+.chart-svg-wrapper svg text {
+  font-family: var(--font-sans);
+}
+
+/* Highlighted table cells (replaces the old inline hex colours) */
+.schedule-table td.col-optimized {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.schedule-table td.col-bomb {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.table-scroll-hint svg {
+  flex-shrink: 0;
+}
+
+/* Schedule footnote */
+.schedule-footnote {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--line);
+  background: var(--surface-sunken);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.schedule-footnote strong {
+  color: var(--ink-2);
 }
 
 /* Schedule table */
@@ -2478,10 +3000,37 @@ textarea.form-control {
   }
 }
 
+.consent-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.consent-close {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--ink-muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: color 150ms ease, background 150ms ease;
+  margin-top: -2px;
+  margin-right: -4px;
+}
+
+.consent-close:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
 .consent-banner p {
   font-size: 0.8125rem;
   color: var(--ink-2);
   line-height: 1.5;
+  margin: 0;
 }
 
 .consent-banner a {
@@ -2533,10 +3082,43 @@ textarea.form-control {
 }
 
 @media print {
+  /* Printing should always be ink-on-paper, even if the visitor chose dark. */
+  :root,
+  :root[data-theme='dark'] {
+    color-scheme: light;
+    --paper: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-sunken: #FFFFFF;
+    --ink: #000000;
+    --ink-2: #111111;
+    --ink-muted: #333333;
+    --ink-faint: #555555;
+    --line: #CCCCCC;
+    --line-strong: #999999;
+    --accent: #0C5B45;
+    --accent-strong: #07402F;
+    --accent-soft: #FFFFFF;
+    --accent-line: #BBBBBB;
+    --danger: #B23A2E;
+    --danger-soft: #FFFFFF;
+    --on-accent: #FFFFFF;
+    --accent-wash: transparent;
+    --chart-bomb-from: #C9564A;
+    --chart-bomb-to: #A83328;
+    --chart-opt-from: #1B7A5C;
+    --chart-opt-to: #0A4A38;
+    --chart-grid: #DDD8CE;
+    --chart-axis: #CFC9BD;
+    --chart-label: #333333;
+    --chart-label-muted: #555555;
+    --chart-strong-label: #A83328;
+  }
+
   body {
     background: #FFFFFF !important;
     color: #000000 !important;
     padding-bottom: 0 !important;
+    transition: none !important;
   }
 
   .site-header,

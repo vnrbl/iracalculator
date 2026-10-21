@@ -3,6 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Resolve the color theme before first paint (no flash of the wrong mode) -->
+  <script>
+    (function () {
+      var mode = 'system';
+      try {
+        var saved = localStorage.getItem('ira_theme_mode');
+        if (saved === 'light' || saved === 'dark') mode = saved;
+      } catch (e) {}
+      var systemDark = window.matchMedia
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+        : false;
+      var theme = mode === 'system' ? (systemDark ? 'dark' : 'light') : mode;
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('data-theme-mode', mode);
+    })();
+  </script>
   <title>IRA Calculator — Traditional, Roth &amp; Inherited IRA Growth &amp; Tax Optimizer</title>
   <meta name="description" content="Free IRA calculator to estimate Traditional, Roth, and Inherited IRA growth, contributions, tax-bracket smoothing, and IRS 10-year required distribution schedules.">
   <link rel="canonical" href="https://iracalculator.com/">
@@ -26,8 +42,7 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <meta name="theme-color" content="#FAF8F4" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#141816" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F8F6F0">
 
   <!-- Google AdSense Verification (Uncomment & replace ca-pub-XXXXXXXXXXXXXXXX once approved) -->
   <!-- <meta name="google-adsense-account" content="ca-pub-XXXXXXXXXXXXXXXX"> -->
@@ -39,7 +54,7 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="/assets/css/style.css?v=7">
+  <link rel="stylesheet" href="/assets/css/style.css?v=8">
 
   <!-- JSON-LD Structured Data: WebApplication & FAQPage -->
   <script type="application/ld+json">
@@ -122,11 +137,39 @@
         <a href="#calculator" class="nav-cta">Calculate now</a>
       </nav>
 
-      <button type="button" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="primary-nav">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-      </button>
+      <div class="header-actions">
+        <div class="theme-menu">
+          <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Color theme: System" aria-haspopup="true" aria-expanded="false" aria-controls="theme-popover" title="Color theme: System">
+            <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <svg class="icon-system" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </button>
+          <div class="theme-popover" id="theme-popover" role="menu" aria-label="Color theme" hidden>
+            <span class="theme-popover-label" aria-hidden="true">Appearance</span>
+            <button type="button" class="theme-option" role="menuitemradio" data-theme-value="light" aria-checked="false">
+              <span class="theme-option-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
+              <span>Light</span>
+              <svg class="theme-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+            </button>
+            <button type="button" class="theme-option" role="menuitemradio" data-theme-value="dark" aria-checked="false">
+              <span class="theme-option-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+              <span>Dark</span>
+              <svg class="theme-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+            </button>
+            <button type="button" class="theme-option" role="menuitemradio" data-theme-value="system" aria-checked="false">
+              <span class="theme-option-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+              <span>System</span>
+              <svg class="theme-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="button" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="primary-nav">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -347,12 +390,19 @@
             </button>
           </div>
 
+          <div class="results-intro">
+            <span class="results-eyebrow">Your result</span>
+            <h2 class="results-title">What the next 10 years cost under each path</h2>
+            <p class="results-lede">Every figure updates as you edit the inputs. Start with the bottom line, then follow the arithmetic line by line.</p>
+          </div>
+
           <!-- Headline result -->
           <div class="savings-callout">
             <div class="savings-info">
               <h3>Estimated lifetime tax savings</h3>
               <div id="display-savings" class="savings-amount tabular-nums" aria-live="polite" aria-atomic="true">$0</div>
               <p class="savings-desc">By spreading withdrawals across the 10-year window instead of waiting for a single Year 10 liquidation.</p>
+              <span class="savings-basis" id="savings-basis">Compared with a single Year 10 lump sum.</span>
             </div>
             <div class="action-buttons">
               <button id="btn-print-report" class="btn btn-primary" title="Print a report for your records or CPA">
@@ -381,18 +431,84 @@
             <div class="kpi-card">
               <div class="kpi-label">Effective tax rate</div>
               <div id="kpi-rate" class="kpi-value tabular-nums">18.5% vs 28.4%</div>
-              <div class="kpi-subtext">Smoothed vs. lump-sum</div>
+              <div class="kpi-subtext">Tax paid as a share of each payout</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-label">Capital retained</div>
               <div id="kpi-retained" class="kpi-value tabular-nums text-emerald">+$38,400</div>
-              <div class="kpi-subtext">Net wealth preserved for heirs</div>
+              <div class="kpi-subtext">Tax dollars kept versus waiting for Year 10</div>
             </div>
           </div>
 
+          <!-- The arithmetic, spelled out -->
+          <div class="results-block-head">
+            <h3>The numbers behind the headline</h3>
+            <span class="results-block-hint">10-year total, federal + state</span>
+          </div>
+
+          <div class="assumption-strip" aria-label="Assumptions used in this calculation">
+            <div class="assumption-cell">
+              <span class="assumption-label">Starting balance</span>
+              <span class="assumption-value" id="sum-balance">$250,000</span>
+            </div>
+            <div class="assumption-cell">
+              <span class="assumption-label">Annual return</span>
+              <span class="assumption-value" id="sum-growth">6.0%</span>
+            </div>
+            <div class="assumption-cell">
+              <span class="assumption-label">Base income</span>
+              <span class="assumption-value" id="sum-income">$95,000</span>
+            </div>
+            <div class="assumption-cell">
+              <span class="assumption-label">Filing status</span>
+              <span class="assumption-value" id="sum-status">Married</span>
+            </div>
+            <div class="assumption-cell">
+              <span class="assumption-label">State tax</span>
+              <span class="assumption-value" id="sum-state">5.5%</span>
+            </div>
+            <div class="assumption-cell">
+              <span class="assumption-label">RMD window</span>
+              <span class="assumption-value" id="sum-rbd">Years 1–9</span>
+            </div>
+          </div>
+
+          <div class="math-panel">
+            <div class="math-equation" aria-label="Savings calculation">
+              <div class="math-term is-loss">
+                <span class="math-label">Tax waiting for Year 10</span>
+                <span class="math-value" id="math-bomb-tax">$0</span>
+              </div>
+              <span class="math-op" aria-hidden="true">−</span>
+              <div class="math-term">
+                <span class="math-label">Tax with smoothing</span>
+                <span class="math-value" id="math-plan-tax">$0</span>
+              </div>
+              <span class="math-op" aria-hidden="true">=</span>
+              <div class="math-term is-result">
+                <span class="math-label">Tax you keep</span>
+                <span class="math-value" id="math-savings">$0</span>
+              </div>
+            </div>
+            <ul class="math-notes">
+              <li>Federal tax is recalculated every year on <em>base income + that year's withdrawal</em> using 2026 ordinary-income brackets.</li>
+              <li>State tax is the selected flat tier applied to each withdrawal (<span id="math-state-rate">5.5%</span>).</li>
+              <li>Savings = total tax under the Year 10 lump sum − total tax under bracket smoothing. Nothing is invested differently between the two paths.</li>
+            </ul>
+            <p class="insight-line">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>
+              <span id="result-insight">Smoothing keeps each year's withdrawal inside a predictable bracket instead of stacking the whole balance into one tax year.</span>
+            </p>
+          </div>
+
           <!-- Strategy comparison -->
+          <div class="results-block-head">
+            <h3>Three ways to take the money</h3>
+            <span class="results-block-hint">Same balance, different timing</span>
+          </div>
+
           <div class="comparison-grid">
-            <div class="scenario-card">
+            <div class="scenario-card" data-scenario="1">
               <div class="scenario-header">
                 <div class="scenario-title">Year 10 tax bomb</div>
                 <div class="scenario-desc">Take only the minimum, then liquidate everything in Year 10</div>
@@ -403,37 +519,45 @@
               </div>
             </div>
 
-            <div class="scenario-card">
+            <div class="scenario-card" data-scenario="2">
+              <span class="badge-recommended" data-rec-badge hidden>Lowest tax</span>
               <div class="scenario-header">
                 <div class="scenario-title">Equal annual plan</div>
                 <div class="scenario-desc">Withdraw one-tenth of the balance each year</div>
               </div>
               <div class="scenario-metrics">
                 <div class="metric-row"><span class="label">Total 10-yr tax</span><span id="s2-total-tax" class="value tabular-nums">$0</span></div>
-                <div class="metric-row"><span class="label">Bracket spikes</span><span class="value">Moderate</span></div>
+                <div class="metric-row"><span class="label">Year 10 tax</span><span id="s2-year10-tax" class="value tabular-nums">$0</span></div>
               </div>
             </div>
 
-            <div class="scenario-card recommended">
-              <span class="badge-recommended">Recommended</span>
+            <div class="scenario-card" data-scenario="3">
+              <span class="badge-recommended" data-rec-badge hidden>Lowest tax</span>
               <div class="scenario-header">
                 <div class="scenario-title">Bracket smoothing</div>
                 <div class="scenario-desc">Fill the lower bracket ceilings first, systematically</div>
               </div>
               <div class="scenario-metrics">
                 <div class="metric-row total-tax"><span class="label">Total 10-yr tax</span><span id="s3-total-tax" class="value tabular-nums">$0</span></div>
-                <div class="metric-row"><span class="label">Year 10 spike</span><span id="s3-year10-tax" class="value tabular-nums" style="color:var(--accent);">Avoided</span></div>
+                <div class="metric-row"><span class="label">Year 10 tax</span><span id="s3-year10-tax" class="value tabular-nums">$0</span></div>
               </div>
             </div>
           </div>
 
+          <p class="comparison-note" id="comparison-note">The badge marks the lowest projected 10-year tax of the three paths at these inputs.</p>
+
           <!-- Chart -->
+          <div class="results-block-head">
+            <h3>How much leaves the account each year</h3>
+            <span class="results-block-hint">100% of the balance must be withdrawn by Year 10</span>
+          </div>
+
           <div class="chart-section">
             <div class="chart-header">
-              <div class="chart-title">Annual withdrawal: tax bomb vs. optimized</div>
+              <div class="chart-title">Annual withdrawal: waiting vs. smoothing</div>
               <div class="chart-legend">
-                <div class="legend-item"><span class="legend-color" style="background:var(--danger);"></span> Year 10 bomb</div>
-                <div class="legend-item"><span class="legend-color" style="background:var(--accent);"></span> Bracket smoothed</div>
+                <div class="legend-item"><span class="legend-color" style="background:var(--danger);"></span> Wait for Year 10</div>
+                <div class="legend-item"><span class="legend-color" style="background:var(--accent);"></span> Bracket smoothing</div>
               </div>
             </div>
             <div id="chart-interactive-tooltip" class="chart-tooltip-box">
@@ -445,6 +569,11 @@
           </div>
 
           <!-- Schedule -->
+          <div class="results-block-head">
+            <h3>Your year-by-year schedule</h3>
+            <span class="results-block-hint">Optimized payout, tax, and remaining balance</span>
+          </div>
+
           <div class="schedule-table-wrap">
             <div class="schedule-table-header">
               <div>
@@ -469,6 +598,7 @@
                     <th scope="col">Tax bomb payout</th>
                     <th scope="col">Taxable income</th>
                     <th scope="col">Estimated tax</th>
+                    <th scope="col">Effective rate</th>
                     <th scope="col">Ending balance</th>
                   </tr>
                 </thead>
@@ -480,6 +610,9 @@
             <div class="schedule-cards-container" id="schedule-cards-container" style="display:none;">
               <!-- Rendered by calculator.js -->
             </div>
+            <p class="schedule-footnote">
+              <strong>How to read this:</strong> each row starts with the balance after that year's growth, shows the withdrawal and the tax it triggers, then the balance left to compound. Effective rate = estimated tax ÷ withdrawal.
+            </p>
           </div>
 
         </section>

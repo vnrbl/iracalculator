@@ -101,6 +101,16 @@
     };
   }
 
+  // Top marginal bracket that a given taxable income reaches (used to explain
+  // which bracket a withdrawal lands in).
+  function getTopBracketRate(taxableIncome, status) {
+    const brackets = TAX_BRACKETS_2026[status] || TAX_BRACKETS_2026.single;
+    for (let i = 0; i < brackets.length; i++) {
+      if (taxableIncome <= brackets[i].max) return Math.round(brackets[i].rate * 100);
+    }
+    return 37;
+  }
+
   // Find the top bracket ceiling for the current income to smooth brackets
   function getBracketCeiling(baseIncome, status) {
     const brackets = TAX_BRACKETS_2026[status] || TAX_BRACKETS_2026.single;
@@ -341,23 +351,23 @@
     let gridSvg = `
       <defs>
         <linearGradient id="barGradRed" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#C4503F"/>
-          <stop offset="100%" stop-color="#A83328"/>
+          <stop class="stop-a" offset="0%" stop-color="#C9564A"/>
+          <stop class="stop-b" offset="100%" stop-color="#A83328"/>
         </linearGradient>
         <linearGradient id="barGradGreen" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#2E7D5F"/>
-          <stop offset="100%" stop-color="#0E5B45"/>
+          <stop class="stop-a" offset="0%" stop-color="#1B7A5C"/>
+          <stop class="stop-b" offset="100%" stop-color="#0A4A38"/>
         </linearGradient>
       </defs>
       <!-- Reference Gridlines -->
-      <line x1="${padLeft}" y1="${y100}" x2="${width - padRight}" y2="${y100}" stroke="#DDD8CE" stroke-dasharray="3 3" stroke-width="1"/>
-      <text x="${padLeft - 6}" y="${y100 + 4}" font-size="10" font-family="Inter, sans-serif" fill="#8C938E" text-anchor="end">${fmtCompact(maxVal)}</text>
+      <line class="chart-gridline" x1="${padLeft}" y1="${y100}" x2="${width - padRight}" y2="${y100}" stroke-dasharray="3 3" stroke-width="1"/>
+      <text class="chart-value-label" x="${padLeft - 6}" y="${y100 + 4}" font-size="10" text-anchor="end">${fmtCompact(maxVal)}</text>
 
-      <line x1="${padLeft}" y1="${y50}" x2="${width - padRight}" y2="${y50}" stroke="#EBE7DF" stroke-dasharray="3 3" stroke-width="1"/>
-      <text x="${padLeft - 6}" y="${y50 + 4}" font-size="10" font-family="Inter, sans-serif" fill="#8C938E" text-anchor="end">${fmtCompact(maxVal * 0.5)}</text>
+      <line class="chart-gridline" x1="${padLeft}" y1="${y50}" x2="${width - padRight}" y2="${y50}" stroke-dasharray="3 3" stroke-width="1"/>
+      <text class="chart-value-label" x="${padLeft - 6}" y="${y50 + 4}" font-size="10" text-anchor="end">${fmtCompact(maxVal * 0.5)}</text>
 
       <!-- Baseline -->
-      <line x1="${padLeft}" y1="${height - padBottom}" x2="${width - padRight}" y2="${height - padBottom}" stroke="#CFC9BD" stroke-width="1.5"/>
+      <line class="chart-axis-line" x1="${padLeft}" y1="${height - padBottom}" x2="${width - padRight}" y2="${height - padBottom}" stroke-width="1.5"/>
     `;
 
     let bars = '';
@@ -384,13 +394,13 @@
 
           <!-- Year 10 Bomb Callout Tag -->
           ${i === 9 ? `
-            <text x="${xGroup + barWidth * 0.5}" y="${Math.max(14, y1 - 6)}" font-size="9.5" font-weight="800" font-family="Inter, sans-serif" fill="#B23A2E" text-anchor="middle">
+            <text class="chart-bar-label" x="${xGroup + barWidth * 0.5}" y="${Math.max(14, y1 - 6)}" font-size="9.5" font-weight="800" text-anchor="middle">
               ${fmtCompact(s1[i].withdrawal)}
             </text>
           ` : ''}
 
           <!-- X-Axis Year label -->
-          <text x="${xGroup + barWidth + 1.5}" y="${height - padBottom + 17}" font-size="11" font-weight="600" font-family="Inter, sans-serif" text-anchor="middle" fill="#5C645F" class="axis-label">
+          <text x="${xGroup + barWidth + 1.5}" y="${height - padBottom + 17}" font-size="11" font-weight="600" text-anchor="middle" class="chart-axis-label axis-label">
             Y${i + 1}
           </text>
         </g>
@@ -414,7 +424,10 @@
 
     const rateS1 = s1Withdrawn > 0 ? (s1TotalTax / s1Withdrawn * 100).toFixed(1) : '0.0';
     const rateS3 = s3Withdrawn > 0 ? (s3TotalTax / s3Withdrawn * 100).toFixed(1) : '0.0';
-    const y10Diff = Math.max(0, results.scenario1.schedule[9].taxes - results.scenario3.schedule[9].taxes);
+    const y10S1 = results.scenario1.schedule[9].taxes;
+    const y10S3 = results.scenario3.schedule[9].taxes;
+    const y10Diff = Math.max(0, y10S1 - y10S3);
+    const y10Drop = y10S1 > 0 ? Math.round((1 - y10S3 / y10S1) * 100) : 0;
 
     const kpiSpike = document.getElementById('kpi-spike');
     const kpiSpikeSub = document.getElementById('kpi-spike-sub');
@@ -422,11 +435,11 @@
     const kpiRetained = document.getElementById('kpi-retained');
 
     if (kpiSpike) {
-      kpiSpike.textContent = 'Eliminated';
+      kpiSpike.textContent = y10S1 > 0 ? Math.max(0, y10Drop) + '% lower' : 'Eliminated';
       kpiSpike.className = 'kpi-value text-emerald';
     }
     if (kpiSpikeSub) {
-      kpiSpikeSub.textContent = `Avoided ${fmt(y10Diff)} in single-year tax shock`;
+      kpiSpikeSub.textContent = `Year 10 tax: ${fmt(y10S3)} vs ${fmt(y10S1)} — ${fmt(y10Diff)} avoided`;
     }
     if (kpiRate) {
       kpiRate.textContent = `${rateS3}% vs ${rateS1}%`;
@@ -475,6 +488,14 @@
             <div class="myc-stat">
               <span class="myc-stat-label">Estimated Tax</span>
               <span class="myc-stat-value">${fmt(optTax)}</span>
+            </div>
+            <div class="myc-stat">
+              <span class="myc-stat-label">Effective Rate</span>
+              <span class="myc-stat-value">${optWithdrawal > 0 ? ((optTax / optWithdrawal) * 100).toFixed(1) + '%' : '—'}</span>
+            </div>
+            <div class="myc-stat">
+              <span class="myc-stat-label">Top Bracket</span>
+              <span class="myc-stat-value">${getTopBracketRate(s3[i].taxableIncome, document.getElementById('input-status').value || 'married')}%</span>
             </div>
             <div class="myc-stat">
               <span class="myc-stat-label">Ending Balance</span>
@@ -526,14 +547,75 @@
     const s1TotalEl = document.getElementById('s1-total-tax');
     const s1Y10El = document.getElementById('s1-year10-tax');
     const s2TotalEl = document.getElementById('s2-total-tax');
+    const s2Y10El = document.getElementById('s2-year10-tax');
     const s3TotalEl = document.getElementById('s3-total-tax');
     const s3Y10El = document.getElementById('s3-year10-tax');
 
     if (s1TotalEl) s1TotalEl.textContent = fmt(results.scenario1.totalTax);
     if (s1Y10El) s1Y10El.textContent = fmt(results.scenario1.schedule[9].taxes);
     if (s2TotalEl) s2TotalEl.textContent = fmt(results.scenario2.totalTax);
+    if (s2Y10El) s2Y10El.textContent = fmt(results.scenario2.schedule[9].taxes);
     if (s3TotalEl) s3TotalEl.textContent = fmt(results.scenario3.totalTax);
-    if (s3Y10El) s3Y10El.textContent = 'Avoided (' + fmt(results.scenario3.schedule[9].taxes) + ')';
+    if (s3Y10El) s3Y10El.textContent = fmt(results.scenario3.schedule[9].taxes);
+
+    // The "lowest tax" badge follows the actual cheapest of the two spread-out
+    // plans instead of being hard-coded to bracket smoothing.
+    const recommendedScenario = results.scenario2.totalTax <= results.scenario3.totalTax ? 2 : 3;
+    document.querySelectorAll('.scenario-card[data-scenario]').forEach(card => {
+      const isRecommended = Number(card.getAttribute('data-scenario')) === recommendedScenario;
+      card.classList.toggle('recommended', isRecommended);
+      const badge = card.querySelector('[data-rec-badge]');
+      if (badge) badge.hidden = !isRecommended;
+    });
+    const comparisonNote = document.getElementById('comparison-note');
+    if (comparisonNote) {
+      comparisonNote.textContent = `Badge marks the lowest projected 10-year tax of the three paths at these inputs (${recommendedScenario === 2 ? 'equal annual' : 'bracket smoothing'} plan).`;
+    }
+
+    // Assumption summary + plain-language arithmetic
+    const stateRate = STATE_TAX_RATES[stateRateKey] || 0.055;
+    const statusLabels = {
+      single: 'Single',
+      married: 'Married filing jointly',
+      hoh: 'Head of household'
+    };
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    };
+
+    setText('sum-balance', fmt(balance));
+    setText('sum-growth', annualGrowthRate.toFixed(1) + '%');
+    setText('sum-income', fmt(baseIncome));
+    setText('sum-status', statusLabels[filingStatus] || 'Single');
+    setText('sum-state', (stateRate * 100).toFixed(1) + '%');
+    setText('sum-rbd', diedAfterRBD ? 'Years 1–9' : 'None');
+    setText('math-state-rate', (stateRate * 100).toFixed(1) + '%');
+    setText('math-bomb-tax', fmt(results.scenario1.totalTax));
+    setText('math-plan-tax', fmt(results.scenario3.totalTax));
+    setText('math-savings', fmt(results.taxSavings));
+    setText('savings-basis', `Versus ${fmt(results.scenario1.totalTax)} of total tax if you wait for Year 10.`);
+
+    // Explain the result in one sentence, using the brackets the numbers actually hit.
+    const bombWithdrawal = results.scenario1.schedule[9].withdrawal;
+    const bombBracket = getTopBracketRate(
+      results.scenario1.schedule[9].taxableIncome,
+      filingStatus
+    );
+    const smoothedTopBracket = results.scenario3.schedule.reduce(
+      (max, row) => Math.max(max, getTopBracketRate(row.taxableIncome, filingStatus)),
+      0
+    );
+    const s1Withdrawn = results.scenario1.totalWithdrawn;
+    const s3Withdrawn = results.scenario3.totalWithdrawn;
+    const s1Rate = s1Withdrawn > 0 ? (results.scenario1.totalTax / s1Withdrawn) * 100 : 0;
+    const s3Rate = s3Withdrawn > 0 ? (results.scenario3.totalTax / s3Withdrawn) * 100 : 0;
+    const insight = document.getElementById('result-insight');
+    if (insight) {
+      insight.innerHTML = results.taxSavings > 0
+        ? `A single Year 10 withdrawal of <strong>${fmt(bombWithdrawal)}</strong> pushes income into the <strong>${bombBracket}%</strong> federal bracket. Smoothing keeps federal taxable income at or below <strong>${smoothedTopBracket}%</strong>, cutting the blended federal + state rate from <strong>${s1Rate.toFixed(1)}%</strong> to <strong>${s3Rate.toFixed(1)}%</strong>.`
+        : 'At these inputs, both paths carry a similar total tax. Use the schedule to compare timing and the remaining balance before deciding.';
+    }
 
     // SVG Chart
     const chartContainer = document.getElementById('chart-container');
@@ -552,13 +634,17 @@
       for (let i = 0; i < 10; i++) {
         const tr = document.createElement('tr');
         tr.setAttribute('data-year', i + 1);
+        const effRate = s3[i].withdrawal > 0
+          ? ((s3[i].taxes / s3[i].withdrawal) * 100).toFixed(1) + '%'
+          : '—';
         tr.innerHTML = `
           <td><strong>Year ${i + 1}</strong> <span class="sub-age">(Age ${beneficiaryAge + i})</span></td>
           <td>${fmt(s3[i].beginningBalance)}</td>
-          <td class="col-highlight" style="color: #0E5B45; font-weight: 700;">${fmt(s3[i].withdrawal)}</td>
-          <td style="color: #B23A2E; font-weight: 600;">${fmt(s1[i].withdrawal)}</td>
+          <td class="col-highlight col-optimized">${fmt(s3[i].withdrawal)}</td>
+          <td class="col-bomb">${fmt(s1[i].withdrawal)}</td>
           <td>${fmt(s3[i].taxableIncome)}</td>
           <td>${fmt(s3[i].taxes)}</td>
+          <td>${effRate}</td>
           <td>${fmt(s3[i].endingBalance)}</td>
         `;
         tbody.appendChild(tr);

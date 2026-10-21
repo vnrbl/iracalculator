@@ -6,7 +6,150 @@
 (function () {
   'use strict';
 
+  // ---------------------------------------------------------------
+  // 0. Theme Controller — light / dark / follow the system
+  //    The inline boot script in <head> sets the initial attributes before
+  //    first paint; this module owns the UI and keeps system changes live.
+  // ---------------------------------------------------------------
+  function initTheme() {
+    const STORAGE_KEY = 'ira_theme_mode';
+    const MODES = ['light', 'dark', 'system'];
+    const THEME_COLOR = { light: '#F8F6F0', dark: '#0F1512' };
+
+    const root = document.documentElement;
+    const toggle = document.getElementById('theme-toggle');
+    const popover = document.getElementById('theme-popover');
+    const options = popover ? Array.from(popover.querySelectorAll('[data-theme-value]')) : [];
+    const media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+
+    function readMode() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (MODES.indexOf(saved) !== -1) return saved;
+      } catch (e) {}
+      return 'system';
+    }
+
+    function writeMode(mode) {
+      try {
+        localStorage.setItem(STORAGE_KEY, mode);
+      } catch (e) {}
+    }
+
+    function resolveTheme(mode) {
+      if (mode === 'light' || mode === 'dark') return mode;
+      return media && media.matches ? 'dark' : 'light';
+    }
+
+    function paint(mode) {
+      const theme = resolveTheme(mode);
+      root.setAttribute('data-theme', theme);
+      root.setAttribute('data-theme-mode', mode);
+
+      if (metaTheme) metaTheme.setAttribute('content', THEME_COLOR[theme]);
+
+      if (toggle) {
+        const label = 'Color theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+        toggle.setAttribute('aria-label', label);
+        toggle.setAttribute('title', label);
+      }
+
+      options.forEach(option => {
+        option.setAttribute(
+          'aria-checked',
+          option.getAttribute('data-theme-value') === mode ? 'true' : 'false'
+        );
+      });
+    }
+
+    function setMode(mode, persist) {
+      if (MODES.indexOf(mode) === -1) mode = 'system';
+      if (persist) writeMode(mode);
+      paint(mode);
+    }
+
+    function openMenu() {
+      if (!popover || !toggle) return;
+      popover.hidden = false;
+      toggle.setAttribute('aria-expanded', 'true');
+      const checked = popover.querySelector('[aria-checked="true"]') || options[0];
+      if (checked) checked.focus();
+    }
+
+    function closeMenu(returnFocus) {
+      if (!popover || !toggle) return;
+      popover.hidden = true;
+      toggle.setAttribute('aria-expanded', 'false');
+      if (returnFocus) toggle.focus();
+    }
+
+    // Sync the UI with whatever the boot script already resolved.
+    setMode(readMode(), false);
+
+    if (toggle && popover) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (popover.hidden) {
+          openMenu();
+        } else {
+          closeMenu(false);
+        }
+      });
+
+      options.forEach(option => {
+        option.addEventListener('click', () => {
+          setMode(option.getAttribute('data-theme-value'), true);
+          closeMenu(true);
+        });
+      });
+
+      // Roving arrow-key navigation inside the menu
+      popover.addEventListener('keydown', (e) => {
+        const current = options.indexOf(document.activeElement);
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (!options.length) return;
+          const step = e.key === 'ArrowDown' ? 1 : -1;
+          const next = (current + step + options.length) % options.length;
+          options[next].focus();
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!popover.hidden && !popover.contains(e.target) && !toggle.contains(e.target)) {
+          closeMenu(false);
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !popover.hidden) {
+          closeMenu(true);
+        }
+      });
+    }
+
+    // Follow the OS live while the visitor is on "System".
+    if (media) {
+      const onSystemChange = () => {
+        if (readMode() === 'system') paint('system');
+      };
+      if (typeof media.addEventListener === 'function') {
+        media.addEventListener('change', onSystemChange);
+      } else if (typeof media.addListener === 'function') {
+        media.addListener(onSystemChange);
+      }
+    }
+
+    // Keep multiple open tabs in sync.
+    window.addEventListener('storage', (e) => {
+      if (e.key === STORAGE_KEY) paint(readMode());
+    });
+  }
+
   function initApp() {
+    initTheme();
+
     // -------------------------------------------------------------
     // 1. Mobile Navigation & Drawer Management
     // -------------------------------------------------------------
@@ -282,15 +425,72 @@
     });
 
     // -------------------------------------------------------------
-    // 7. Cookie / Consent Banner (placeholder — wires to no ad network)
+    // 7. Cookie / Consent Banner
     // -------------------------------------------------------------
     const CONSENT_KEY = 'ira_consent_choice';
-    let storedChoice = null;
-    try {
-      storedChoice = localStorage.getItem(CONSENT_KEY);
-    } catch (e) {
-      storedChoice = null;
+    const ONE_YEAR_SECS = 365 * 24 * 60 * 60;
+
+    function getCookieDomain() {
+      const hostname = window.location.hostname;
+      if (!hostname || hostname === 'localhost' || hostname === '127.0.0.1' || /^(\d+\.){3}\d+$/.test(hostname)) {
+        return '';
+      }
+      const parts = hostname.split('.');
+      if (parts.length >= 2) {
+        return '; domain=.' + parts.slice(-2).join('.');
+      }
+      return '';
     }
+
+    function getStoredConsent() {
+      // 1. Check localStorage
+      try {
+        const val = localStorage.getItem(CONSENT_KEY);
+        if (val) return val;
+      } catch (e) {}
+
+      // 2. Check document.cookie
+      try {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const c = cookies[i].trim();
+          if (c.indexOf(CONSENT_KEY + '=') === 0) {
+            return decodeURIComponent(c.substring(CONSENT_KEY.length + 1));
+          }
+        }
+      } catch (e) {}
+
+      // 3. Check sessionStorage
+      try {
+        const val = sessionStorage.getItem(CONSENT_KEY);
+        if (val) return val;
+      } catch (e) {}
+
+      return null;
+    }
+
+    function saveConsent(choice) {
+      const val = choice || 'essential';
+
+      // 1. Save to localStorage
+      try {
+        localStorage.setItem(CONSENT_KEY, val);
+      } catch (e) {}
+
+      // 2. Save to document.cookie (1-year persistence across all subdomains)
+      try {
+        const domainStr = getCookieDomain();
+        const secureStr = window.location.protocol === 'https:' ? '; Secure' : '';
+        document.cookie = `${CONSENT_KEY}=${encodeURIComponent(val)}; path=/; max-age=${ONE_YEAR_SECS}; SameSite=Lax${domainStr}${secureStr}`;
+      } catch (e) {}
+
+      // 3. Save to sessionStorage
+      try {
+        sessionStorage.setItem(CONSENT_KEY, val);
+      } catch (e) {}
+    }
+
+    const storedChoice = getStoredConsent();
 
     if (!storedChoice) {
       const banner = document.createElement('div');
@@ -298,7 +498,10 @@
       banner.setAttribute('role', 'dialog');
       banner.setAttribute('aria-label', 'Cookie consent');
       banner.innerHTML = `
-        <p>We use essential cookies to run this site and, with your consent, cookies that help fund it through advertising. Read our <a href="/privacy.html">Privacy Policy</a>.</p>
+        <div class="consent-header">
+          <p>We use essential cookies to run this site and, with your consent, cookies that help fund it through advertising. Read our <a href="/privacy.html" class="consent-policy-link">Privacy Policy</a>.</p>
+          <button type="button" class="consent-close" aria-label="Dismiss cookie notice" data-consent="essential">&times;</button>
+        </div>
         <div class="consent-actions">
           <button type="button" class="btn btn-primary" data-consent="accept">Accept all</button>
           <button type="button" class="btn btn-outline" data-consent="essential">Essential only</button>
@@ -306,16 +509,24 @@
       `;
       document.body.appendChild(banner);
 
+      const dismiss = (choice) => {
+        saveConsent(choice);
+        banner.remove();
+      };
+
       banner.querySelectorAll('[data-consent]').forEach(btn => {
         btn.addEventListener('click', () => {
-          try {
-            localStorage.setItem(CONSENT_KEY, btn.getAttribute('data-consent'));
-          } catch (e) {
-            /* storage unavailable — banner simply closes for this session */
-          }
-          banner.remove();
+          dismiss(btn.getAttribute('data-consent'));
         });
       });
+
+      // If user clicks Privacy Policy, remember essential so banner doesn't block the policy page
+      const policyLink = banner.querySelector('.consent-policy-link');
+      if (policyLink) {
+        policyLink.addEventListener('click', () => {
+          saveConsent('essential');
+        });
+      }
     }
 
     // -------------------------------------------------------------
