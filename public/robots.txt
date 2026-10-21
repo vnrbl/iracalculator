@@ -1,10 +1,73 @@
 # Robots.txt for IRACALCULATOR
 # https://iracalculator.online/
+# Free IRA Calculator, Retirement Savings Calculator, Roth IRA Calculator
 
+# All crawlers welcome
 User-agent: *
 Allow: /
 Sitemap: https://iracalculator.online/sitemap.xml
 
-# Explicit authorization for Google AdSense Review Crawler
+# Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Google Image
+User-agent: Googlebot-Image
+Allow: /
+
+# Google AdSense Crawler
 User-agent: Mediapartners-Google
 Allow: /
+
+# Bing & Yahoo (Microsoft Ecosystem)
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+
+# DuckDuckGo
+User-agent: DuckDuckBot
+Allow: /
+
+# Yandex
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 2
+
+# Baidu
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 2
+
+# Apple (Applebot for Siri/Spotlight)
+User-agent: Applebot
+Allow: /
+
+# Facebook Crawler (for OG tags)
+User-agent: facebookexternalhit
+Allow: /
+
+# Twitter Crawler (for Twitter Cards)
+User-agent: Twitterbot
+Allow: /
+
+# LinkedIn Crawler
+User-agent: LinkedInBot
+Allow: /
+
+# Pinterest Crawler
+User-agent: Pinterest
+Allow: /
+
+# Block AI training crawlers that don't send search traffic
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
