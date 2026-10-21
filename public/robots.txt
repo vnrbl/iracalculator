@@ -1,0 +1,10 @@
+# Robots.txt for IRACALCULATOR
+# https://iracalculator.com/
+
+User-agent: *
+Allow: /
+Sitemap: https://iracalculator.com/sitemap.xml
+
+# Explicit authorization for Google AdSense Review Crawler
+User-agent: Mediapartners-Google
+Allow: /

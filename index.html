@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IRA Calculator — Traditional, Roth &amp; Inherited IRA Growth &amp; Tax Optimizer</title>
+  <meta name="description" content="Free IRA calculator to estimate Traditional, Roth, and Inherited IRA growth, contributions, tax-bracket smoothing, and IRS 10-year required distribution schedules.">
+  <link rel="canonical" href="https://iracalculator.com/">
+
+  <!-- Open Graph / Social Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="IRACALCULATOR">
+  <meta property="og:url" content="https://iracalculator.com/">
+  <meta property="og:title" content="IRA Calculator — Traditional, Roth &amp; Inherited IRA Optimizer">
+  <meta property="og:description" content="Model IRA growth, smooth federal and state tax brackets, and plan mandatory withdrawals under the SECURE Act 10-year rule.">
+  <meta property="og:image" content="https://iracalculator.com/assets/og-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="IRA Calculator — Traditional, Roth &amp; Inherited IRA Optimizer">
+  <meta name="twitter:description" content="Free calculator to model IRA growth, compound returns, and bracket-smoothed distributions.">
+  <meta name="twitter:image" content="https://iracalculator.com/assets/og-preview.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="theme-color" content="#FAF8F4" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#141816" media="(prefers-color-scheme: dark)">
+
+  <!-- Google AdSense Verification (Uncomment & replace ca-pub-XXXXXXXXXXXXXXXX once approved) -->
+  <!-- <meta name="google-adsense-account" content="ca-pub-XXXXXXXXXXXXXXXX"> -->
+  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
+  <!-- Fonts: Source Serif 4 (display) + IBM Plex Sans (UI) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/assets/css/style.css?v=7">
+
+  <!-- JSON-LD Structured Data: WebApplication & FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "IRACALCULATOR — Retirement & Inherited IRA Optimizer",
+        "url": "https://iracalculator.com/",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires JavaScript",
+        "description": "Calculates compound IRA growth, IRS required minimum distributions, and optimized 10-year liquidation schedules to minimize federal and state income tax liabilities.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How does this IRA calculator estimate growth and taxes?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The calculator simulates annual compounding investment returns, applies IRS life-expectancy factors (IRC § 401(a)(9) and Treasury Decision 10001), and calculates progressive federal and state tax liabilities based on your filing status."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between Traditional, Roth, and Inherited IRAs?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Traditional IRAs are funded with pre-tax dollars and grow tax-deferred until retirement when withdrawals are taxed as ordinary income. Roth IRAs are funded with after-tax dollars and provide tax-free withdrawals in retirement. Inherited IRAs are passed to beneficiaries and must generally be emptied within 10 years under SECURE Act 2.0 regulations."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the Inherited IRA 10-Year Rule under SECURE Act 2.0?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Non-spouse beneficiaries who inherit a traditional or Roth IRA after December 31, 2019, must fully liquidate the account by December 31 of the 10th year following the owner's death. If the owner died after their Required Beginning Date (age 73), annual distributions are mandatory in years 1 through 9."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is tax-bracket smoothing and how does it save money?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Tax-bracket smoothing distributes taxable withdrawals across multiple tax years to absorb lower marginal tax brackets (12% and 22%), rather than postponing withdrawals to Year 10 which pushes income into top 32%, 35%, or 37% tax brackets."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <!-- ===================== Site Header ===================== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="site-logo" aria-label="IRACALCULATOR home">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        <span>IRA<span class="highlight">CALCULATOR</span></span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary">
+        <div class="mobile-nav-header">
+          <span class="mobile-nav-title">Menu</span>
+          <button type="button" class="mobile-nav-close" aria-label="Close navigation">&times;</button>
+        </div>
+        <a href="#calculator" class="nav-link active">Calculator</a>
+        <a href="#how-it-works" class="nav-link">How it works</a>
+        <a href="#comparison" class="nav-link">IRA types</a>
+        <a href="#guides" class="nav-link">Guides</a>
+        <a href="#faq" class="nav-link">FAQ</a>
+        <a href="#calculator" class="nav-cta">Calculate now</a>
+      </nav>
+
+      <button type="button" class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="primary-nav">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="mobile-overlay" id="mobile-overlay"></div>
+
+  <!-- ===================== Hero (left-aligned, compact so the calculator stays above the fold) ===================== -->
+  <section class="hero-section">
+    <div class="container hero-grid">
+      <div class="hero-main">
+        <span class="hero-badge">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Updated for the 2026 tax year
+        </span>
+        <h1 class="hero-title">See what an inherited IRA really costs you</h1>
+        <p class="hero-subtitle">
+          Enter your balance and tax profile. We model the full 10-year window and show how bracket-smoothing withdrawals compares to waiting for a single lump sum.
+        </p>
+      </div>
+
+      <aside class="hero-aside" aria-label="What this tool covers">
+        <p class="hero-fact">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+          SECURE Act 2.0 &amp; IRS TD 10001 logic
+        </p>
+        <p class="hero-fact">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+          Federal and state brackets for 2026
+        </p>
+        <p class="hero-fact">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+          Runs entirely in your browser — nothing is uploaded
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ===================== Calculator (the hero tool) ===================== -->
+  <main id="calculator" class="calculator-app-section">
+    <div class="container">
+
+      <!-- Mobile view switcher -->
+      <div class="calc-mobile-tabs-wrap" id="calc-tabs-bar">
+        <div class="calc-mobile-tabs" role="tablist" aria-label="Calculator views">
+          <button type="button" class="calc-tab-btn active" id="tab-btn-inputs" role="tab" aria-selected="true" data-tab="inputs">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <span>1. Inputs</span>
+          </button>
+          <button type="button" class="calc-tab-btn" id="tab-btn-results" role="tab" aria-selected="false" data-tab="results">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            <span>2. Strategy</span>
+            <span class="tab-badge-savings" id="tab-savings-badge">+$0</span>
+          </button>
+          <button type="button" class="calc-tab-btn" id="tab-btn-schedule" role="tab" aria-selected="false" data-tab="schedule">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span>3. Schedule</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="calc-grid">
+
+        <!-- ---------- Inputs ---------- -->
+        <section class="calc-card" aria-label="IRA inputs">
+          <div class="calc-header">
+            <h2>
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h4"/>
+              </svg>
+              Your account &amp; tax profile
+            </h2>
+          </div>
+
+          <form id="calc-form" class="calc-body" onsubmit="return false;" novalidate>
+
+            <!-- Quick presets -->
+            <div class="preset-bar">
+              <span class="preset-label">Start from a scenario</span>
+              <div class="preset-buttons">
+                <button type="button" class="btn-preset active" data-balance="250000" data-growth="6.0" data-income="95000" data-status="married" data-rbd="after">$250k standard</button>
+                <button type="button" class="btn-preset" data-balance="500000" data-growth="7.0" data-income="140000" data-status="married" data-rbd="after">$500k estate</button>
+                <button type="button" class="btn-preset" data-balance="1000000" data-growth="6.5" data-income="220000" data-status="married" data-rbd="after">$1M inheritance</button>
+                <button type="button" class="btn-preset btn-preset-reset" id="btn-reset-defaults" title="Reset all inputs to their defaults">Reset</button>
+              </div>
+            </div>
+
+            <!-- Step 1 -->
+            <div class="form-step-heading">
+              <span class="step-badge" aria-hidden="true">1</span>
+              <span>Account balance &amp; growth</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-balance">
+                <span>Current account balance ($)</span>
+                <button type="button" class="tooltip-btn" data-tooltip="Current fair market value of the inherited or Traditional IRA portfolio.">What's this?</button>
+              </label>
+              <div class="input-with-prefix">
+                <span class="input-prefix" aria-hidden="true">$</span>
+                <input type="number" id="input-balance" class="form-control tabular-nums" value="250000" min="1000" step="5000" placeholder="250,000" inputmode="decimal" aria-describedby="help-balance">
+              </div>
+              <div class="range-slider-wrap">
+                <input type="range" id="slider-balance" class="form-range" value="250000" min="10000" max="2000000" step="5000" aria-label="Account balance slider">
+                <div class="range-labels"><span>$10k</span><span>$1M</span><span>$2M+</span></div>
+              </div>
+              <p class="form-help" id="help-balance">The amount in the account today, before any future growth.</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-growth">
+                <span>Expected annual return (%)</span>
+                <button type="button" class="tooltip-btn" data-tooltip="The average annual investment return you expect while the assets stay invested in the IRA.">Info</button>
+              </label>
+              <input type="number" id="input-growth" class="form-control tabular-nums" value="6.0" min="0" max="15" step="0.5" placeholder="6.0" inputmode="decimal">
+              <div class="range-slider-wrap">
+                <input type="range" id="slider-growth" class="form-range" value="6.0" min="0" max="12" step="0.5" aria-label="Expected return slider">
+                <div class="range-labels"><span>0% cash</span><span>6% balanced</span><span>12% equity</span></div>
+              </div>
+              <p class="form-help">A diversified portfolio has historically averaged 5–7% after fees.</p>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="form-step-heading">
+              <span class="step-badge" aria-hidden="true">2</span>
+              <span>IRS status of the original owner</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <span>Owner's age at death</span>
+                <button type="button" class="tooltip-btn" data-tooltip="The Required Beginning Date (RBD) is age 73. If the owner died on or after age 73, annual RMDs in years 1–9 are mandatory under IRS TD 10001.">IRS rule</button>
+              </label>
+              <div class="radio-tile-group" role="radiogroup" aria-label="Owner age at death relative to the Required Beginning Date">
+                <label class="radio-tile">
+                  <input type="radio" name="rbd_status" id="rbd-before" value="before">
+                  <strong>Before age 73</strong>
+                  <span class="form-help">No required withdrawals in years 1–9</span>
+                </label>
+                <label class="radio-tile active">
+                  <input type="radio" name="rbd_status" id="rbd-after" value="after" checked>
+                  <strong>Age 73 or older</strong>
+                  <span class="form-help">Annual RMDs are mandatory in years 1–9</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="form-step-heading">
+              <span class="step-badge" aria-hidden="true">3</span>
+              <span>Your tax profile</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-income">
+                <span>Your base taxable income ($)</span>
+                <button type="button" class="tooltip-btn" data-tooltip="Your usual annual taxable income (salary, self-employment, interest) excluding any IRA withdrawals.">Info</button>
+              </label>
+              <div class="input-with-prefix">
+                <span class="input-prefix" aria-hidden="true">$</span>
+                <input type="number" id="input-income" class="form-control tabular-nums" value="95000" min="0" step="5000" placeholder="95,000" inputmode="decimal">
+              </div>
+              <div class="range-slider-wrap">
+                <input type="range" id="slider-income" class="form-range" value="95000" min="0" max="400000" step="5000" aria-label="Base income slider">
+                <div class="range-labels"><span>$0</span><span>$200k</span><span>$400k+</span></div>
+              </div>
+              <p class="form-help">This sets which marginal tax bracket your withdrawals start from.</p>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="input-status">Filing status</label>
+                <select id="input-status" class="form-control">
+                  <option value="single">Single</option>
+                  <option value="married" selected>Married filing jointly</option>
+                  <option value="hoh">Head of household</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-state">State tax tier</label>
+                <select id="input-state" class="form-control">
+                  <option value="NONE">No state tax (TX, FL, WA)</option>
+                  <option value="LOW">Low — 3.5%</option>
+                  <option value="MED" selected>Average — 5.5%</option>
+                  <option value="HIGH">High — 9.0% (CA, NY, NJ)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="input-age">Your current age</label>
+                <input type="number" id="input-age" class="form-control tabular-nums" value="45" min="18" max="95" placeholder="45" inputmode="numeric">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-income-growth">Income growth (%/yr)</label>
+                <input type="number" id="input-income-growth" class="form-control tabular-nums" value="2.5" min="0" max="10" step="0.5" placeholder="2.5" inputmode="decimal">
+              </div>
+            </div>
+
+            <div class="form-action-jump">
+              <button type="button" class="btn btn-primary btn-jump-results" id="btn-jump-results">
+                <span>View strategy &amp; lifetime savings</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+
+          </form>
+        </section>
+
+        <!-- ---------- Results ---------- -->
+        <section class="results-card" id="results-panel" aria-label="10-year optimization results">
+
+          <div class="results-action-jump">
+            <button type="button" class="btn btn-outline btn-jump-inputs" id="btn-jump-inputs">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <span>Edit inputs</span>
+            </button>
+          </div>
+
+          <!-- Headline result -->
+          <div class="savings-callout">
+            <div class="savings-info">
+              <h3>Estimated lifetime tax savings</h3>
+              <div id="display-savings" class="savings-amount tabular-nums" aria-live="polite" aria-atomic="true">$0</div>
+              <p class="savings-desc">By spreading withdrawals across the 10-year window instead of waiting for a single Year 10 liquidation.</p>
+            </div>
+            <div class="action-buttons">
+              <button id="btn-print-report" class="btn btn-primary" title="Print a report for your records or CPA">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/>
+                </svg>
+                Print report
+              </button>
+              <button id="btn-share-link" class="btn btn-outline" title="Copy a link to this calculation">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+                Share
+              </button>
+            </div>
+          </div>
+
+          <!-- Breakdown -->
+          <div class="kpi-strip">
+            <div class="kpi-card">
+              <div class="kpi-label">Year 10 tax spike</div>
+              <div id="kpi-spike" class="kpi-value text-emerald">Eliminated</div>
+              <div class="kpi-subtext" id="kpi-spike-sub">Avoided top 32%+ bracket spike</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Effective tax rate</div>
+              <div id="kpi-rate" class="kpi-value tabular-nums">18.5% vs 28.4%</div>
+              <div class="kpi-subtext">Smoothed vs. lump-sum</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Capital retained</div>
+              <div id="kpi-retained" class="kpi-value tabular-nums text-emerald">+$38,400</div>
+              <div class="kpi-subtext">Net wealth preserved for heirs</div>
+            </div>
+          </div>
+
+          <!-- Strategy comparison -->
+          <div class="comparison-grid">
+            <div class="scenario-card">
+              <div class="scenario-header">
+                <div class="scenario-title">Year 10 tax bomb</div>
+                <div class="scenario-desc">Take only the minimum, then liquidate everything in Year 10</div>
+              </div>
+              <div class="scenario-metrics">
+                <div class="metric-row total-tax"><span class="label">Total 10-yr tax</span><span id="s1-total-tax" class="value tabular-nums">$0</span></div>
+                <div class="metric-row"><span class="label">Year 10 tax alone</span><span id="s1-year10-tax" class="value tabular-nums" style="color:var(--danger);">$0</span></div>
+              </div>
+            </div>
+
+            <div class="scenario-card">
+              <div class="scenario-header">
+                <div class="scenario-title">Equal annual plan</div>
+                <div class="scenario-desc">Withdraw one-tenth of the balance each year</div>
+              </div>
+              <div class="scenario-metrics">
+                <div class="metric-row"><span class="label">Total 10-yr tax</span><span id="s2-total-tax" class="value tabular-nums">$0</span></div>
+                <div class="metric-row"><span class="label">Bracket spikes</span><span class="value">Moderate</span></div>
+              </div>
+            </div>
+
+            <div class="scenario-card recommended">
+              <span class="badge-recommended">Recommended</span>
+              <div class="scenario-header">
+                <div class="scenario-title">Bracket smoothing</div>
+                <div class="scenario-desc">Fill the lower bracket ceilings first, systematically</div>
+              </div>
+              <div class="scenario-metrics">
+                <div class="metric-row total-tax"><span class="label">Total 10-yr tax</span><span id="s3-total-tax" class="value tabular-nums">$0</span></div>
+                <div class="metric-row"><span class="label">Year 10 spike</span><span id="s3-year10-tax" class="value tabular-nums" style="color:var(--accent);">Avoided</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart -->
+          <div class="chart-section">
+            <div class="chart-header">
+              <div class="chart-title">Annual withdrawal: tax bomb vs. optimized</div>
+              <div class="chart-legend">
+                <div class="legend-item"><span class="legend-color" style="background:var(--danger);"></span> Year 10 bomb</div>
+                <div class="legend-item"><span class="legend-color" style="background:var(--accent);"></span> Bracket smoothed</div>
+              </div>
+            </div>
+            <div id="chart-interactive-tooltip" class="chart-tooltip-box">
+              <span class="cit-prompt">Tip: hover or tap a bar to inspect that year's withdrawals and tax.</span>
+            </div>
+            <div id="chart-container" class="chart-svg-wrapper" role="img" aria-label="Chart comparing annual withdrawals under each strategy">
+              <!-- Rendered by calculator.js -->
+            </div>
+          </div>
+
+          <!-- Schedule -->
+          <div class="schedule-table-wrap">
+            <div class="schedule-table-header">
+              <div>
+                <h4>Year-by-year optimized schedule</h4>
+                <span class="table-scroll-hint">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M7 16l-4-4m0 0l4-4m-4 4h18M17 8l4 4m0 0l-4 4"/></svg>
+                  Swipe the table horizontally on touch screens
+                </span>
+              </div>
+              <div class="view-toggle-group">
+                <button type="button" class="btn-toggle active" id="btn-view-table">Table</button>
+                <button type="button" class="btn-toggle" id="btn-view-cards">Cards</button>
+              </div>
+            </div>
+            <div class="table-scroll-container" id="schedule-table-container">
+              <table class="schedule-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Period</th>
+                    <th scope="col">Starting balance</th>
+                    <th scope="col">Optimized payout</th>
+                    <th scope="col">Tax bomb payout</th>
+                    <th scope="col">Taxable income</th>
+                    <th scope="col">Estimated tax</th>
+                    <th scope="col">Ending balance</th>
+                  </tr>
+                </thead>
+                <tbody id="schedule-tbody">
+                  <!-- Rendered by calculator.js -->
+                </tbody>
+              </table>
+            </div>
+            <div class="schedule-cards-container" id="schedule-cards-container" style="display:none;">
+              <!-- Rendered by calculator.js -->
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Ad slot: below the results, never next to a button -->
+  <div class="container">
+    <div class="ad-slot-container in-content" aria-label="Advertisement">
+      <span class="ad-slot-label">Advertisement</span>
+      <!-- Google AdSense unit goes here once approved. Keep the min-height to avoid layout shift. -->
+      <span class="ad-slot-placeholder">Independent retirement planning resources</span>
+    </div>
+  </div>
+
+  <!-- ===================== How it works ===================== -->
+  <section id="how-it-works" class="how-it-works-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Methodology</span>
+        <h2 class="section-title">How the calculator works</h2>
+        <p class="section-subtitle">The model pairs IRS distribution tables with 2026 federal and state brackets to find the lowest-cost withdrawal path across the full 10-year window.</p>
+      </div>
+
+      <div class="how-grid">
+        <div class="steps-grid">
+          <article class="step-card">
+            <div class="step-card-head">
+              <span class="step-number" aria-hidden="true">1</span>
+              <h3 class="step-title">Enter account &amp; tax profile</h3>
+            </div>
+            <p class="step-desc">Add the inherited or Traditional IRA balance, expected growth, your baseline income, and state tax tier. Sensible defaults mean results appear immediately.</p>
+          </article>
+
+          <article class="step-card">
+            <div class="step-card-head">
+              <span class="step-number" aria-hidden="true">2</span>
+              <h3 class="step-title">Brackets are smoothed</h3>
+            </div>
+            <p class="step-desc">Instead of letting compound growth pile up for a single Year 10 lump sum, the model fills the 12% and 22% bracket ceilings every year.</p>
+          </article>
+
+          <article class="step-card">
+            <div class="step-card-head">
+              <span class="step-number" aria-hidden="true">3</span>
+              <h3 class="step-title">Read the schedule</h3>
+            </div>
+            <p class="step-desc">See exact year-by-year distribution amounts, tax, and ending balance — then print a summary to bring to your CPA.</p>
+          </article>
+        </div>
+
+        <!-- Desktop-only sidebar ad -->
+        <aside class="ad-rail" aria-label="Advertisement">
+          <div class="ad-slot-container">
+            <span class="ad-slot-label">Advertisement</span>
+            <!-- Google AdSense rail unit goes here once approved. -->
+            <span class="ad-slot-placeholder">Featured partner</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== IRA comparison ===================== -->
+  <section id="comparison" class="comparison-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Account types</span>
+        <h2 class="section-title">Traditional vs. Roth vs. inherited IRA</h2>
+        <p class="section-subtitle">The tax treatment and distribution rules differ sharply between the three account types — and the difference compounds.</p>
+      </div>
+
+      <div class="comparison-table-wrapper">
+        <table class="ira-comparison-table">
+          <thead>
+            <tr>
+              <th class="col-feature" scope="col">Key feature</th>
+              <th class="col-trad" scope="col">Traditional IRA</th>
+              <th class="col-roth" scope="col">Roth IRA</th>
+              <th class="col-inh" scope="col">Inherited IRA (non-spouse)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Deduction on contributions</strong></td>
+              <td>Yes, if eligible by income and workplace plan</td>
+              <td>No — funded with after-tax dollars</td>
+              <td>N/A — new contributions prohibited</td>
+            </tr>
+            <tr>
+              <td><strong>Investment growth</strong></td>
+              <td>Tax-deferred until withdrawal</td>
+              <td>100% tax-free</td>
+              <td>Tax-deferred until distributed</td>
+            </tr>
+            <tr>
+              <td><strong>2026 contribution limit</strong></td>
+              <td>$7,000 ($8,000 if age 50+)</td>
+              <td>$7,000 ($8,000 if age 50+)</td>
+              <td>$0</td>
+            </tr>
+            <tr>
+              <td><strong>Taxation of withdrawals</strong></td>
+              <td>Ordinary income</td>
+              <td>Tax-free after age 59½</td>
+              <td>Ordinary income (unless inherited Roth)</td>
+            </tr>
+            <tr>
+              <td><strong>SECURE Act 10-year rule</strong></td>
+              <td>Does not apply to the original owner</td>
+              <td>Does not apply to the original owner</td>
+              <td><strong>Mandatory 10-year liquidation</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Lifetime RMDs</strong></td>
+              <td>Start at age 73 (rising to 75 in 2033)</td>
+              <td>None for the original owner</td>
+              <td>Required in years 1–9 if the owner died post-RBD</td>
+            </tr>
+            <tr>
+              <td><strong>Best for</strong></td>
+              <td>Upfront tax relief during peak earning years</td>
+              <td>Tax-free retirement income and legacy wealth</td>
+              <td>Bracket-smoothed multi-year liquidation</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ad slot: between content sections -->
+  <div class="container">
+    <div class="ad-slot-container mid-content" aria-label="Advertisement">
+      <span class="ad-slot-label">Advertisement</span>
+      <!-- Google AdSense unit goes here once approved. -->
+      <span class="ad-slot-placeholder">Estate planning &amp; tax minimization advisors</span>
+    </div>
+  </div>
+
+  <!-- ===================== Guides ===================== -->
+  <section id="guides" class="content-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Knowledge hub</span>
+        <h2 class="section-title">Inherited IRA rules, explained</h2>
+        <p class="section-subtitle">Plain-language analysis of SECURE Act 2.0, Treasury Decision 10001, and the strategy behind bracket smoothing.</p>
+      </div>
+
+      <div class="guides-grid">
+        <a href="/guides/secure-act-10-year-rule.html" class="guide-card">
+          <span class="guide-tag">IRS regulations</span>
+          <h3 class="guide-title">The complete guide to the SECURE Act 10-year rule</h3>
+          <p class="guide-excerpt">How the mandatory 10-year liquidation window works, who qualifies as an eligible designated beneficiary, and what the final IRS regulations changed.</p>
+          <div class="guide-meta"><span>Tax Strategy Team</span><span>7 min read</span></div>
+        </a>
+
+        <a href="/guides/how-to-avoid-year-10-tax-bomb.html" class="guide-card">
+          <span class="guide-tag">Tax strategy</span>
+          <h3 class="guide-title">How to avoid the "Year 10 tax bomb"</h3>
+          <p class="guide-excerpt">Why waiting until Year 10 is the most expensive mistake heirs make — and four tactics that spread the tax across the decade instead.</p>
+          <div class="guide-meta"><span>Financial Analysis Team</span><span>9 min read</span></div>
+        </a>
+
+        <a href="/guides/before-vs-after-rbd-rules.html" class="guide-card">
+          <span class="guide-tag">RMD compliance</span>
+          <h3 class="guide-title">Death before vs. after the Required Beginning Date</h3>
+          <p class="guide-excerpt">Did the owner reach age 73? This single fact decides whether annual withdrawals are legally required in years 1 through 9.</p>
+          <div class="guide-meta"><span>IRS final rules</span><span>6 min read</span></div>
+        </a>
+
+        <a href="/guides/eligible-vs-non-eligible-beneficiaries.html" class="guide-card">
+          <span class="guide-tag">Beneficiary types</span>
+          <h3 class="guide-title">Eligible vs. non-eligible designated beneficiaries</h3>
+          <p class="guide-excerpt">Can you still stretch an inherited IRA over your lifetime? See who qualifies as an eligible designated beneficiary and who is bound by the 10-year clock.</p>
+          <div class="guide-meta"><span>Estate planning</span><span>5 min read</span></div>
+        </a>
+
+        <a href="/guides/state-tax-inherited-ira.html" class="guide-card">
+          <span class="guide-tag">State taxes</span>
+          <h3 class="guide-title">State-by-state taxation of inherited IRAs</h3>
+          <p class="guide-excerpt">Federal tax is only half the picture. See which states levy no income tax on withdrawals and which reach top marginal rates above 13%.</p>
+          <div class="guide-meta"><span>50-state breakdown</span><span>8 min read</span></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FAQ ===================== -->
+  <section id="faq" class="faq-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">FAQ</span>
+        <h2 class="section-title">Common IRA &amp; beneficiary questions</h2>
+        <p class="section-subtitle">Short answers on required minimum distributions, penalties, and planning.</p>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>What is the inherited IRA 10-year rule under SECURE Act 2.0?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer">
+            Enacted under the SECURE Act and clarified by SECURE Act 2.0, the 10-year rule requires most non-spouse designated beneficiaries who inherit a traditional or Roth IRA after December 31, 2019, to fully distribute all assets by December 31 of the 10th year following the original owner's death.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>Do I have to take withdrawals every year, or can I wait until Year 10?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer">
+            It depends on whether the original owner reached their Required Beginning Date (RBD, age 73). Under the IRS final regulations (TD 10001, July 2024):
+            <ul>
+              <li><strong>Owner died before RBD:</strong> annual distributions in years 1–9 are optional. The entire balance must be zero by December 31 of Year 10.</li>
+              <li><strong>Owner died on or after RBD:</strong> you are legally required to take annual RMDs in years 1 through 9 based on your single life expectancy, and liquidate all remaining assets in Year 10.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>What happens if I miss a mandatory annual RMD?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer">
+            Under SECURE Act 2.0, the excise penalty for failing to take a required minimum distribution is 25% of the shortfall amount, reduced to 10% if corrected in a timely manner via IRS Form 5329. Transitional penalty relief covered 2021–2024, but full enforcement applies going forward.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>Does the 10-year rule apply to inherited Roth IRAs?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer">
+            Yes — inherited Roth IRAs are subject to the 10-year rule for non-spouse beneficiaries. However, because qualified Roth distributions are tax-free and not subject to annual RMDs, beneficiaries generally do best by leaving the funds invested until Year 10.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>How does bracket smoothing protect against the Year 10 tax bomb?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer">
+            Traditional IRA distributions are ordinary taxable income. Leaving a $250,000+ account to compound for a decade can push a single-year distribution into the 32%, 35%, or 37% federal brackets. Smoothing spreads withdrawals across years 1–10 to absorb room in the 12% and 22% brackets, often saving tens of thousands of dollars in total tax.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Footer ===================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="site-logo">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <span>IRA<span class="highlight">CALCULATOR</span></span>
+          </a>
+          <p>Independent, research-driven retirement and estate tax calculators that help American families keep more of what they inherit.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Tools</h4>
+          <ul class="footer-links">
+            <li><a href="/#calculator">10-year IRA optimizer</a></li>
+            <li><a href="/#comparison">Traditional vs. Roth IRA</a></li>
+            <li><a href="/guides/state-tax-inherited-ira.html">State tax rates</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Guides</h4>
+          <ul class="footer-links">
+            <li><a href="/guides/secure-act-10-year-rule.html">SECURE Act 2.0 guide</a></li>
+            <li><a href="/guides/how-to-avoid-year-10-tax-bomb.html">Avoiding tax bombs</a></li>
+            <li><a href="/guides/eligible-vs-non-eligible-beneficiaries.html">Beneficiary types</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Trust &amp; legal</h4>
+          <ul class="footer-links">
+            <li><a href="/about.html">About us</a></li>
+            <li><a href="/contact.html">Contact us</a></li>
+            <li><a href="/privacy.html">Privacy policy</a></li>
+            <li><a href="/terms.html">Terms of service</a></li>
+            <li><a href="/disclaimer.html">Financial disclaimer</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 IRACALCULATOR (iracalculator.com). All rights reserved.</p>
+        <p class="footer-disclaimer">For educational purposes only — not financial advice. This application does not constitute legal, tax, or investment advice. Always consult a Certified Financial Planner or licensed CPA before executing retirement distributions.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Mobile quick-summary bar -->
+  <aside class="mobile-sticky-kpi-bar" id="mobile-sticky-bar" aria-label="Quick savings summary">
+    <div class="msb-info">
+      <span class="msb-label">Lifetime tax saved</span>
+      <span class="msb-amount" id="msb-savings-display">$0</span>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm msb-btn" id="msb-toggle-btn">View results →</button>
+  </aside>
+
+  <!-- Scripts -->
+  <script type="module" src="/assets/js/calculator.js"></script>
+  <script type="module" src="/assets/js/main.js"></script>
+
+</body>
+</html>
