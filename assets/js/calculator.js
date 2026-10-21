@@ -519,6 +519,304 @@
   }
 
   // -----------------------------------------------------------------
+  // DETAILED CALCULATION SUMMARY — one combined view of the whole
+  // computation: the minimal math on one side, a plain-language story
+  // of the decade on the other. Rebuilt on every recompute.
+  // -----------------------------------------------------------------
+
+  function computeSummaryData(results, params) {
+    if (!results || !params) return null;
+
+    const s1 = results.scenario1;
+    const s2 = results.scenario2;
+    const s3 = results.scenario3;
+    const stateRatePct = (STATE_TAX_RATES[params.stateRateKey] || 0) * 100;
+
+    const startingBalance = params.balance;
+    const y10Before = s3.schedule[9].beginningBalance; // balance just before the final withdrawal
+    const growthGain = y10Before - startingBalance;
+    const growthPct = startingBalance > 0 ? (growthGain / startingBalance) * 100 : 0;
+
+    const bombWithdrawal = s1.schedule[9].withdrawal;
+    const bombTaxY10 = s1.schedule[9].taxes;
+    const planTaxY10 = s3.schedule[9].taxes;
+    const bombTaxable = s1.schedule[9].taxableIncome;
+    const bombBracket = getTopBracketRate(bombTaxable, params.filingStatus);
+
+    const maxSmoothedBracket = s3.schedule.reduce((max, row) => {
+      return Math.max(max, getTopBracketRate(row.taxableIncome, params.filingStatus));
+    }, 0);
+
+    // Years 1–3 under the smoothed plan
+    const first3 = s3.schedule.slice(0, 3);
+    const earlyAvg = first3.reduce((s, r) => s + r.withdrawal, 0) / first3.length;
+    const endY3 = s3.schedule[2].endingBalance;
+    const withdrawnY3 = first3.reduce((s, r) => s + r.withdrawal, 0);
+
+    // Years 4–9 under the smoothed plan
+    const mid = s3.schedule.slice(3, 9);
+    const midAvg = mid.reduce((s, r) => s + r.withdrawal, 0) / mid.length;
+    const midTaxAvg = mid.reduce((s, r) => s + r.taxes, 0) / mid.length;
+
+    // Peak-tax year under the smoothed plan
+    let peakIdx = 0;
+    s3.schedule.forEach((row, i) => {
+      if (row.taxes > s3.schedule[peakIdx].taxes) peakIdx = i;
+    });
+
+    const smoothRate = s3.totalWithdrawn > 0 ? (s3.totalTax / s3.totalWithdrawn) * 100 : 0;
+    const waitRate = s1.totalWithdrawn > 0 ? (s1.totalTax / s1.totalWithdrawn) * 100 : 0;
+    const savedPctOfBalance = startingBalance > 0 ? (results.taxSavings / startingBalance) * 100 : 0;
+
+    // Which spread-out plan is cheapest (mirrors the comparison cards)
+    const bestIsEqual = s2.totalTax < s3.totalTax;
+    const bestPlanLabel = bestIsEqual ? 'Equal annual plan' : 'Bracket smoothing';
+    const bestTax = Math.min(s2.totalTax, s3.totalTax);
+    const bestY10Tax = bestIsEqual ? s2.schedule[9].taxes : s3.schedule[9].taxes;
+    const bestAvg = (bestIsEqual ? s2.totalWithdrawn : s3.totalWithdrawn) / 10;
+
+    return {
+      stateRatePct,
+      startingBalance,
+      y10Before,
+      growthGain,
+      growthPct,
+      bombWithdrawal,
+      bombTaxY10,
+      planTaxY10,
+      bombTaxable,
+      bombBracket,
+      maxSmoothedBracket,
+      earlyAvg,
+      endY3,
+      withdrawnY3,
+      midAvg,
+      midTaxAvg,
+      peakIdx,
+      smoothRate,
+      waitRate,
+      savedPctOfBalance,
+      bestIsEqual,
+      bestPlanLabel,
+      bestTax,
+      bestY10Tax,
+      bestAvg,
+      totalDistributed: s3.totalWithdrawn,
+      totalTaxPlan: s3.totalTax,
+      totalTaxWait: s1.totalTax,
+      statusLabel: {
+        single: 'Single',
+        married: 'Married filing jointly',
+        hoh: 'Head of household'
+      }[params.filingStatus] || 'Single',
+      diedAfterRBD: params.diedAfterRBD,
+      growthRate: params.annualGrowthRate,
+      baseIncome: params.baseIncome,
+      taxSavings: results.taxSavings
+    };
+  }
+
+  // Shared narrative: the decade, told year-band by year-band.
+  // Returns [{ chip, html, isFinal }]
+  function buildSummaryStory(d) {
+    const items = [];
+
+    items.push({
+      chip: 'Years 1–3',
+      isFinal: false,
+      html:
+        `Withdrawals average about <strong>${fmt(d.earlyAvg)}</strong> a year on top of ` +
+        `<strong>${fmt(d.baseIncome)}</strong> of base income, keeping taxable income inside the ` +
+        `<strong>${d.maxSmoothedBracket}%</strong> federal bracket. After Year 3, ` +
+        `<strong>${fmt(d.endY3)}</strong> is still compounding at ${d.growthRate.toFixed(1)}% and ` +
+        `<strong>${fmt(d.withdrawnY3)}</strong> has already been distributed.`
+    });
+
+    items.push({
+      chip: 'Years 4–9',
+      isFinal: false,
+      html:
+        `Steady pace: roughly <strong>${fmt(d.midAvg)}</strong> withdrawn each year, costing about ` +
+        `<strong>${fmt(d.midTaxAvg)}</strong> in combined federal + state tax per year.` +
+        (d.diedAfterRBD
+          ? ' Each withdrawal is sized at or above the IRS single-life minimum, so required distributions stay covered every year.'
+          : ' No IRS minimum applies in these years — the plan sets the pace.')
+    });
+
+    items.push({
+      chip: 'Year 10',
+      isFinal: false,
+      html:
+        `The remaining <strong>${fmt(d.y10Before)}</strong> leaves the account for good — ` +
+        `<strong>${fmt(d.planTaxY10)}</strong> of final tax under the plan, versus ` +
+        `<strong>${fmt(d.bombTaxY10)}</strong> if you had waited. Waiting stacks ` +
+        `<strong>${d.bombBracket}%</strong> federal bracket plus ${d.stateRatePct.toFixed(1)}% state — the Year 10 tax bomb.`
+    });
+
+    if (d.taxSavings > 0) {
+      items.push({
+        chip: 'Bottom line',
+        isFinal: true,
+        html:
+          `Same money out, less tax in: <strong>${fmt(d.totalTaxPlan)}</strong> over the decade versus ` +
+          `<strong>${fmt(d.totalTaxWait)}</strong> if you wait. You keep <strong>${fmt(d.taxSavings)}</strong> ` +
+          `— about <strong>${d.savedPctOfBalance.toFixed(1)}%</strong> of the starting balance — and enter ` +
+          `Year 11 fully liquidated and fully compliant.`
+      });
+    } else {
+      items.push({
+        chip: 'Bottom line',
+        isFinal: true,
+        html:
+          `At these inputs both timing paths cost a similar total tax (${fmt(d.totalTaxPlan)} smoothed vs ` +
+          `${fmt(d.totalTaxWait)} waiting). Compare the year-by-year pacing below, and re-run with a higher ` +
+          `base income or a different state tier to see where smoothing starts to win.`
+      });
+    }
+
+    return items;
+  }
+
+  function buildSummaryMarkup(d) {
+    const story = buildSummaryStory(d);
+
+    const glanceChips = [
+      { label: 'Starting balance', value: fmt(d.startingBalance), cls: '' },
+      { label: 'Balance at Year 10', value: fmt(d.y10Before), cls: '' },
+      { label: 'Avg withdrawal (plan)', value: fmt(d.bestAvg) + '/yr', cls: '' },
+      {
+        label: 'Peak tax year (plan)',
+        value: 'Y' + (d.peakIdx + 1) + ' · ' + fmt(d._peakTax),
+        cls: ''
+      },
+      { label: 'Top bracket, smoothed', value: '≤ ' + d.maxSmoothedBracket + '%', cls: 'is-good' },
+      {
+        label: 'Year 10 bracket, waiting',
+        value: d.bombBracket + '% fed + ' + d.stateRatePct.toFixed(1) + '% state',
+        cls: 'is-danger'
+      }
+    ];
+
+    const verdictTitle = d.taxSavings > 0
+      ? (d.bestIsEqual
+        ? 'The equal plan edges out bracket smoothing'
+        : `${d.bestPlanLabel} is your lowest-cost path`)
+      : 'Both timing paths cost about the same here';
+
+    const verdictSub = d.taxSavings > 0
+      ? `Spreading the liquidation across the decade keeps income at or below the ` +
+        `<strong>${d.maxSmoothedBracket}%</strong> federal bracket instead of stacking ` +
+        `${fmt(d.bombTaxable)} into one Year 10 withdrawal in the <strong>${d.bombBracket}%</strong> bracket.`
+      : `Waiting and smoothing produce a similar 10-year tax at these inputs. The pacing and remaining-balance differences below still matter for cash-flow planning.`;
+
+    return `
+      <div class="cs-verdict${d.taxSavings > 0 ? '' : ' cs-verdict--neutral'}">
+        <div class="cs-verdict-text">
+          <span class="cs-verdict-eyebrow">Verdict</span>
+          <h4 class="cs-verdict-title">${verdictTitle}</h4>
+          <p class="cs-verdict-sub">${verdictSub}</p>
+        </div>
+        <div class="cs-verdict-aside">
+          <span class="cs-verdict-amount-label">Estimated tax savings</span>
+          <span class="cs-verdict-amount">${fmt(d.taxSavings)}</span>
+          <span class="cs-verdict-amount-note">vs. ${fmt(d.totalTaxWait)} paid if you wait</span>
+        </div>
+      </div>
+
+      <div class="cs-grid-two">
+        <div class="cs-card">
+          <span class="cs-subhead">The shortest version of the math</span>
+          <div class="cs-equation">
+            <div class="cs-term is-loss">
+              <span class="cs-term-label">Tax if you wait for Year 10</span>
+              <span class="cs-term-value">${fmt(d.totalTaxWait)}</span>
+            </div>
+            <span class="cs-op" aria-hidden="true">−</span>
+            <div class="cs-term">
+              <span class="cs-term-label">Tax with the smoothed plan</span>
+              <span class="cs-term-value">${fmt(d.totalTaxPlan)}</span>
+            </div>
+            <span class="cs-op" aria-hidden="true">=</span>
+            <div class="cs-term is-result">
+              <span class="cs-term-label">You keep</span>
+              <span class="cs-term-value">${fmt(d.taxSavings)}</span>
+            </div>
+          </div>
+          <ul class="cs-mini-list">
+            <li>
+              <span>Your <strong>${fmt(d.startingBalance)}</strong> balance compounds at ` +
+              `${d.growthRate.toFixed(1)}% into <strong>${fmt(d.y10Before)}</strong> by Year 10 ` +
+              `(+${d.growthPct.toFixed(0)}%).</span>
+            </li>
+            <li>
+              <span>All <strong>${fmt(d.totalDistributed)}</strong> must be withdrawn inside the 10-year ` +
+              `window — every timing path pays out the same dollars.</span>
+            </li>
+            <li>
+              <span>The smoothed plan takes about <strong>${fmt(d.bestAvg)}</strong> a year at a ` +
+              `<strong>${d.smoothRate.toFixed(1)}%</strong> blended rate, versus ` +
+              `<strong>${d.waitRate.toFixed(1)}%</strong> if you wait.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="cs-card">
+          <span class="cs-subhead">At a glance</span>
+          <div class="cs-glance-grid">
+            ${glanceChips.map(c => `
+              <div class="cs-glance-chip ${c.cls}">
+                <span class="cs-glance-label">${c.label}</span>
+                <span class="cs-glance-value">${c.value}</span>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="cs-card">
+        <span class="cs-subhead">What the next 10 years look like</span>
+        <ol class="cs-timeline">
+          ${story.map(s => `
+            <li class="${s.isFinal ? 'cs-final' : ''}">
+              <span class="cs-year-chip">${s.chip}</span>
+              <p>${s.html}</p>
+            </li>`).join('')}
+        </ol>
+      </div>
+
+      <p class="cs-notes">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <span><strong>Not advice — a model.</strong> Estimates use 2026 federal brackets for ${d.statusLabel}, ` +
+        `a flat ${d.stateRatePct.toFixed(1)}% state tier, and IRS single-life minimums where required. Try a different ` +
+        `base income or state tier to stress-test the plan, then bring the printed schedule to your CPA or CFP.</span>
+      </p>
+    `;
+  }
+
+  // Print-only rendition of the summary (reuses the shared story text).
+  function buildPrintSummary(d) {
+    const story = buildSummaryStory(d);
+    return `
+      <ul class="pr-timeline">
+        ${story.map(s => `
+          <li${s.isFinal ? ' class="is-final"' : ''}>
+            <span class="pr-vchip">${s.chip}</span>
+            <p>${s.html}</p>
+          </li>`).join('')}
+      </ul>
+    `;
+  }
+
+  function renderDetailedSummary(results, params) {
+    const container = document.getElementById('summary-container');
+    if (!container) return;
+    const d = computeSummaryData(results, params);
+    if (!d) return;
+    // Peak smoothed-plan tax, resolved once for the "at a glance" grid.
+    d._peakTax = results.scenario3.schedule[d.peakIdx].taxes;
+    container.innerHTML = buildSummaryMarkup(d);
+  }
+
+  // -----------------------------------------------------------------
   // PRINT REPORT — generated from the latest calculation and printed
   // instead of the marketing page (only `.print-report` shows in print).
   // -----------------------------------------------------------------
@@ -562,6 +860,7 @@
     const s1Rate = s1.totalWithdrawn > 0 ? ((s1.totalTax / s1.totalWithdrawn) * 100).toFixed(1) : '0.0';
 
     const taxableTotal = s3.schedule.reduce((sum, row) => sum + row.taxableIncome, 0);
+    const printSummary = buildPrintSummary(computeSummaryData(r, p));
 
     const scheduleRows = s3.schedule.map((row, i) => `
           <tr>
@@ -654,6 +953,9 @@
           </tr>
         </tbody>
       </table>
+
+      <h2 class="pr-section-title">Detailed summary — the story of the decade</h2>
+      ${printSummary}
 
       <h2 class="pr-section-title">Bracket-smoothing schedule, year by year</h2>
       <table class="pr-table">
@@ -860,6 +1162,9 @@
 
     // Render Mobile Cards View
     renderMobileCards(results);
+
+    // Combined detailed summary: minimal math + the plain-language story.
+    renderDetailedSummary(results, lastParams);
 
     // Keep the print report in sync with the latest numbers.
     buildPrintReport();

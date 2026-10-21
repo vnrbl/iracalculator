@@ -2096,6 +2096,394 @@ textarea.form-control {
   color: var(--ink-2);
 }
 
+/* === DETAILED CALCULATION SUMMARY =========================================
+   One combined view of the whole computation: verdict banner, minimal math,
+   at-a-glance figures, and the plain-language story of the decade.
+   ========================================================================== */
+.calc-summary {
+  display: grid;
+  gap: var(--space-3);
+}
+
+/* Verdict banner */
+.cs-verdict {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-6);
+  background: linear-gradient(135deg, var(--accent-strong) 0%, var(--accent) 100%);
+  color: var(--on-accent);
+  border: 1px solid var(--accent-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.cs-verdict-text {
+  flex: 1 1 300px;
+}
+
+.cs-verdict-eyebrow {
+  display: inline-block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--on-accent) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-accent) 30%, transparent);
+  margin-bottom: 0.45rem;
+}
+
+.cs-verdict-title {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.3rem;
+}
+
+.cs-verdict-sub {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--on-accent) 88%, transparent);
+  max-width: 62ch;
+}
+
+.cs-verdict-sub strong {
+  color: var(--on-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-verdict-aside {
+  flex: 0 1 210px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  border-left: 1px solid color-mix(in srgb, var(--on-accent) 30%, transparent);
+  padding-left: var(--space-5);
+}
+
+.cs-verdict-amount-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+
+.cs-verdict-amount {
+  font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.375rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-verdict-amount-note {
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--on-accent) 78%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Neutral variant when waiting and smoothing cost about the same */
+.cs-verdict--neutral {
+  background: var(--surface-sunken);
+  border-color: var(--line);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.cs-verdict--neutral .cs-verdict-eyebrow {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  color: var(--accent-strong);
+}
+
+.cs-verdict--neutral .cs-verdict-sub,
+.cs-verdict--neutral .cs-verdict-amount-note {
+  color: var(--ink-muted);
+}
+
+.cs-verdict--neutral .cs-verdict-sub strong {
+  color: var(--ink);
+}
+
+.cs-verdict--neutral .cs-verdict-aside {
+  border-left-color: var(--line);
+}
+
+.cs-verdict--neutral .cs-verdict-amount {
+  color: var(--danger);
+}
+
+/* Time to save — accent the dollars on the winning side */
+.cs-verdict:not(.cs-verdict--neutral) .cs-verdict-amount-note strong {
+  color: var(--on-accent);
+}
+
+/* Two-column region: minimal math | at-a-glance */
+.cs-grid-two {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: var(--space-3);
+}
+
+@media (max-width: 860px) {
+  .cs-grid-two {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cs-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.cs-subhead {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-faint);
+  margin-bottom: var(--space-3);
+}
+
+/* Compact equation */
+.cs-equation {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.cs-term {
+  flex: 1 1 118px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.cs-term-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+}
+
+.cs-term-value {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cs-term.is-loss .cs-term-value {
+  color: var(--danger);
+}
+
+.cs-term.is-result {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+
+.cs-term.is-result .cs-term-label {
+  color: var(--accent-strong);
+}
+
+.cs-term.is-result .cs-term-value {
+  color: var(--accent-strong);
+}
+
+.cs-op {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+}
+
+@media (max-width: 480px) {
+  .cs-term {
+    flex: 1 1 100%;
+  }
+
+  .cs-op {
+    width: 100%;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    margin: 0;
+  }
+}
+
+/* Mini calculation bullets */
+.cs-mini-list {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) 0 0;
+  border-top: 1px dashed var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.cs-mini-list li {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.cs-mini-list li::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  margin-top: 0.45rem;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.cs-mini-list strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* At-a-glance figure grid */
+.cs-glance-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.cs-glance-chip {
+  background: var(--surface);
+  padding: 0.55rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.cs-glance-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-faint);
+}
+
+.cs-glance-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-glance-chip.is-good .cs-glance-value {
+  color: var(--accent-strong);
+}
+
+.cs-glance-chip.is-danger .cs-glance-value {
+  color: var(--danger);
+}
+
+/* The story of the decade */
+.cs-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cs-timeline li {
+  display: flex;
+  gap: var(--space-3);
+  padding: 0.65rem 0;
+}
+
+.cs-timeline li + li {
+  border-top: 1px dashed var(--line);
+}
+
+.cs-year-chip {
+  flex: 0 0 86px;
+  align-self: flex-start;
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  padding: 0.28rem 0.4rem;
+  border-radius: var(--radius-pill);
+  margin-top: 0.1rem;
+}
+
+.cs-timeline li.cs-final .cs-year-chip {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+
+.cs-timeline p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.cs-timeline p strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Caveat / next-step note */
+.cs-notes {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.cs-notes svg {
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.cs-notes strong {
+  color: var(--ink-2);
+}
+
 /* Schedule table */
 .schedule-table-wrap {
   margin-top: var(--space-4);
@@ -3400,6 +3788,57 @@ textarea.form-control {
 
   .pr-next-steps li {
     margin-bottom: 2pt;
+  }
+
+  /* Detailed-summary timeline (from calculator.js buildPrintSummary) */
+  .pr-timeline {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pr-timeline li {
+    display: flex;
+    gap: 8pt;
+    padding: 4pt 0;
+    break-inside: avoid;
+  }
+
+  .pr-timeline li + li {
+    border-top: 0.5pt dashed #C9D6CE;
+  }
+
+  .pr-vchip {
+    flex: 0 0 64pt;
+    align-self: flex-start;
+    text-align: center;
+    background: #EEF6F1;
+    border: 0.5pt solid #BFDCCE;
+    color: #083527;
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 1.5pt 4pt;
+    border-radius: 999pt;
+  }
+
+  .pr-timeline li.is-final .pr-vchip {
+    background: #0C5B45;
+    border-color: #0C5B45;
+    color: #FFFFFF;
+  }
+
+  .pr-timeline p {
+    margin: 0;
+    font-size: 9pt;
+    line-height: 1.5;
+    color: #222222;
+  }
+
+  .pr-timeline p strong {
+    color: #000000;
+    font-variant-numeric: tabular-nums;
   }
 
   .pr-footer {
