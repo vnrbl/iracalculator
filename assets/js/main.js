@@ -1,5 +1,5 @@
 /**
- * IRACALCULATOR (iracalculator.com) — MAIN INTERACTION & ACCESSIBILITY SCRIPTS
+ * IRACALCULATOR (iracalculator.online) — MAIN INTERACTION & ACCESSIBILITY SCRIPTS
  * Mobile Navigation, Interactive Tooltips, FAQ Accordions, Share & Accessibility
  */
 

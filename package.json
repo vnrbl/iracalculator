@@ -1,7 +1,7 @@
 {
   "name": "iracalculator",
   "version": "1.0.0",
-  "description": "IRACALCULATOR — Inherited IRA 10-Year Rule Tax-Bomb and Bracket-Smoothing Optimizer (iracalculator.com)",
+  "description": "IRACALCULATOR — Inherited IRA 10-Year Rule Tax-Bomb and Bracket-Smoothing Optimizer (iracalculator.online)",
   "type": "module",
   "scripts": {
     "dev": "vite",
