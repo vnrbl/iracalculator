@@ -1,7 +1,8 @@
+import { fileURLToPath } from 'url';
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
 
-const rootDir = import.meta.dirname;
+const rootDir = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig({
   build: {
