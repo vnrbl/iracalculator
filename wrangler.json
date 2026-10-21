@@ -5,6 +5,16 @@
   "assets": {
     "directory": "./dist"
   },
+  "routes": [
+    {
+      "pattern": "iracalculator.online",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.iracalculator.online",
+      "custom_domain": true
+    }
+  ],
   "observability": {
     "logs": {
       "enabled": true,
